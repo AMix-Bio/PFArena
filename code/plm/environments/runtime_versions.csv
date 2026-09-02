@@ -1,0 +1,7 @@
+model,python,torch,cuda,transformers,additional
+ESM-2,3.12.1,2.8.0+cu128,12.8,4.57.1,
+ProGen2-base,3.12.1,2.8.0+cu128,12.8,4.57.1,
+ProSST-2048,3.12.1,2.8.0+cu128,12.8,4.57.1,joblib 1.5.3
+S3F,3.10.20,2.1.2,12.1,,
+S3F-MSA,3.10.20,2.5.1+cu124,12.4,,numpy 1.26.4; pandas 2.2.3; scikit-learn 1.5.2; numba 0.60.0
+VenusREM,3.9.20,2.5.1+cu121,12.1,4.46.2,

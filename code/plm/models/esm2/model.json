@@ -1,0 +1,25 @@
+{
+  "model_id": "esm2_t33_650M_UR50D",
+  "model_family": "ESM2",
+  "checkpoint": "facebook/esm2_t33_650M_UR50D",
+  "checkpoint_revision": "08e4846e537177426273712802403f7ba8261b6c",
+  "config_sha256": "539095c22efc52a09d6147074ba4ca119f76a890df5901213b2b55f7d2f96b2b",
+  "weights_file": "model.safetensors",
+  "weights_size_bytes": 2609506392,
+  "weights_sha256": "a08adabb949fa67ad3c14b509d04fd60368b35007b0095e3358f81200c4f4db0",
+  "tokenizer_files": [
+    "vocab.txt",
+    "tokenizer_config.json",
+    "special_tokens_map.json"
+  ],
+  "tokenizer_sha256": "16f3427a0b4fe64c64af96199b846d41b14114d77dcb7e3513b53e2ea788c14a",
+  "framework": "transformers",
+  "precision": "float32",
+  "implementation": "ProEnv ESM2FitnessScorer model loader with local masked-marginal runner",
+  "scoring_strategy": "masked-marginals",
+  "model_window_tokens": 1024,
+  "default_max_residues": 1022,
+  "default_long_sequence_protocol": "centered-special",
+  "cache_format_version": 3,
+  "cache_namespace": "hf_a08adabb949f_full_vocab_v3"
+}

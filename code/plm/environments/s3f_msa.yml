@@ -1,0 +1,19 @@
+name: pfarena-s3f-msa
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10.20
+  - pytorch=2.5.1
+  - pytorch-cuda=12.4
+  - numpy=1.26.4
+  - pandas=2.2.3
+  - scikit-learn=1.5.2
+  - scipy=1.15.3
+  - numba=0.60.0
+  - pip
+  - pip:
+      - joblib==1.5.3
+      - numba-progress==1.1.0
+      - tqdm==4.67.1

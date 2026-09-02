@@ -1,0 +1,7 @@
+.env
+__pycache__/
+results/
+agent_artifacts/
+*.log
+*.jsonl
+*.csv

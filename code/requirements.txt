@@ -1,0 +1,16 @@
+# Runtime dependencies
+# Python >=3.11 (required by biomni)
+
+## LLM inference
+openai==2.24.0
+tqdm==4.67.1
+
+## Agent execution
+biomni==0.0.8
+langchain-openai==1.6.0
+pandas==2.2.3
+scipy==1.15.2
+requests==2.32.3
+
+## PLM
+numpy==1.26.4

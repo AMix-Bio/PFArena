@@ -1,0 +1,87 @@
+{
+  "identity_columns": [
+    "sample_id",
+    "subset",
+    "candidate_group_id",
+    "source_assay",
+    "mutant",
+    "status"
+  ],
+  "primary_score": "progen2_score",
+  "status_values": {
+    "ok": "the complete bidirectional sequence-likelihood result is available"
+  },
+  "sample_outputs": {
+    "progen2_score": {
+      "dtype": "float64",
+      "description": "ProteinGym ProGen2 score from bidirectional chunk mean NLL values",
+      "higher_is_better": true
+    },
+    "bidirectional_mean_nll": {
+      "dtype": "float64",
+      "description": "mean of forward_mean_nll and reverse_mean_nll"
+    },
+    "forward_mean_nll": {
+      "dtype": "float64",
+      "description": "forward_nll_sum divided by forward_token_count"
+    },
+    "reverse_mean_nll": {
+      "dtype": "float64",
+      "description": "reverse_nll_sum divided by reverse_token_count"
+    },
+    "forward_nll_sum": {
+      "dtype": "float64",
+      "description": "sum of forward amino-acid token negative log likelihoods"
+    },
+    "reverse_nll_sum": {
+      "dtype": "float64",
+      "description": "sum of reverse amino-acid token negative log likelihoods"
+    },
+    "forward_chunk_mean_nll_sum": {
+      "dtype": "float64",
+      "description": "sum of forward mean NLL over context chunks"
+    },
+    "reverse_chunk_mean_nll_sum": {
+      "dtype": "float64",
+      "description": "sum of reverse mean NLL over context chunks"
+    },
+    "forward_token_count": {
+      "dtype": "int32",
+      "description": "number of scored forward tokens"
+    },
+    "reverse_token_count": {
+      "dtype": "int32",
+      "description": "number of scored reverse tokens"
+    },
+    "chunk_count": {
+      "dtype": "int32",
+      "description": "number of non-overlapping context chunks"
+    },
+    "progen2_delta": {
+      "dtype": "float64",
+      "description": "mutant ProGen2 score minus the corresponding wild-type chain score",
+      "higher_is_better": true
+    }
+  },
+  "cache": {
+    "format": "npz",
+    "granularity": "wild-type chain plus unique complete variant sequence",
+    "contents": [
+      "cache_format_version",
+      "cache_config_sha256",
+      "sequence_sha256",
+      "keys",
+      "progen2_score",
+      "bidirectional_mean_nll",
+      "forward_mean_nll",
+      "reverse_mean_nll",
+      "forward_nll_sum",
+      "reverse_nll_sum",
+      "forward_chunk_mean_nll_sum",
+      "reverse_chunk_mean_nll_sum",
+      "forward_token_count",
+      "reverse_token_count",
+      "chunk_count"
+    ]
+  }
+}
