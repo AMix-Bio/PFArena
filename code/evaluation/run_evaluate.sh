@@ -9,7 +9,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 # ==============================
 # Edit these values, or override them through environment variables.
 MODEL="${MODEL:-gpt-5.6-sol}"                           # For LLM or PLM source
-SETTING="${SETTING:-T1_single_mutant_generation}"       # Tasks: ("T1_single_mutant_generation", "T2_measurement_free_multi_mutant_ranking", "T3_anchor_informed_multi_mutant_ranking", "T4_mutation_informed_multi_mutant_ranking")
+SETTING="${SETTING:-T1_single_mutant_generation}"       # Tasks: ("T1_single_mutant_generation", "T2_measurement_free_multi_mutant_ranking", "T3_anchor_informed_multi_mutant_ranking", "T4_single_mutant_informed_multi_mutant_ranking")
 RESULTS_SOURCE="${RESULTS_SOURCE:-llm}"                 # Source: ("llm", "plm", "agent")
 # ==============================
 

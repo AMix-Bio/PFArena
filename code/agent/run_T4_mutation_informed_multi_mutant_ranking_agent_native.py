@@ -12,4 +12,4 @@ from agent_native_common import main_for_task
 
 
 if __name__ == "__main__":
-    raise SystemExit(main_for_task("T4_mutation_informed_multi_mutant_ranking"))
+    raise SystemExit(main_for_task("T4_single_mutant_informed_multi_mutant_ranking"))

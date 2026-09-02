@@ -19,7 +19,7 @@ DATASET_INPUTS = {
     "1": ("T1_single_mutant_generation", "assay.csv"),
     "2": ("T2_measurement_free_multi_mutant_ranking", "norm_data"),
     "3": ("T3_anchor_informed_multi_mutant_ranking", "norm_data"),
-    "4": ("T4_mutation_informed_multi_mutant_ranking", "norm_data"),
+    "4": ("T4_single_mutant_informed_multi_mutant_ranking", "norm_data"),
 }
 
 
