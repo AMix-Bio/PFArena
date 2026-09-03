@@ -60,7 +60,7 @@ unchanged and DO NOT expose ground-truth columns to an inference backend.
 
 ## 3. Inference
 
-### 3.1 LLM inference
+### LLM inference
 
 The API runner uses an OpenAI-compatible endpoint. Setup the endpoint `API_BASE_URL` and key `API_KEY` in the environment, or directly in `code/llm/settings.py` where it is read.
 
@@ -108,7 +108,7 @@ Outputs are written as one CSV per assay under
 skipped; add `--force` to recompute them. Use `--max-files` for a smoke test,
 and lower `--num-workers` when the endpoint has a strict rate limit.
 
-### 3.2 Agent inference
+### Agent inference
 
 The Agent runner wraps Biomni and supports DeepSeek, GPT, and Claude through an
 OpenAI-compatible interface. The provider presets in `code/agent/run.py` map
@@ -169,7 +169,7 @@ continue a partially completed run. GPU dispatch is optional and disabled by
 default; enable it only after configuring a compatible dispatcher and shared
 job directory (see [`code/agent/README.md`](code/agent/README.md)).
 
-### 3.3 PLM inference
+### PLM inference
 
 PLMs are deliberately isolated from the shared `pfarena` environment. The
 environment files under
@@ -258,7 +258,7 @@ passes `--lenient`, which scores the available assays when coverage is
 incomplete; remove that flag in the wrapper or call `evaluation.evaluate`
 directly for strict coverage checking.
 
-### 4.1 Evaluate LLM predictions
+### Evaluate LLM predictions
 
 ```bash
 cd "$PF_REPO"
@@ -274,7 +274,7 @@ For T2, T3, or T4, change `SETTING` to the corresponding full task directory
 name. The evaluator expects the LLM files at
 `<RESULTS_ROOT>/<MODEL>/<SETTING>/norm_data/`.
 
-### 4.2 Evaluate Agent predictions
+### Evaluate Agent predictions
 
 Set `AGENT_PREDICTIONS_NAME` to the filename passed to `--output-csv`:
 
@@ -291,7 +291,7 @@ bash "$PF_REPO/code/evaluation/run_evaluate.sh"
 The Agent result directory is expected to be
 `<RESULTS_ROOT>/<SETTING>/`.
 
-### 4.3 Evaluate PLM predictions
+### Evaluate PLM predictions
 
 After `finalize_results.py` creates
 `<RESULTS_ROOT>/<MODEL>/tasks/<SETTING>/evaluator_predictions.csv`, run:
