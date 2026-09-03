@@ -20,9 +20,9 @@ export PYTHONPATH="$PF_REPO/code${PYTHONPATH:+:$PYTHONPATH}"
 ```
 
 Do not install PLM dependencies into this environment. Each PLM has its own
-Conda specification.
+Conda specification, described in the [PLM inference](#plm-inference) section.
 
-## 2. Download the benchmark data
+## 2. Download PFArena benchmark data
 
 Download the `PFArena` dataset from
 [`AMix-Bio/PFArena`](https://huggingface.co/datasets/AMix-Bio/PFArena) before
