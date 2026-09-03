@@ -8,7 +8,7 @@
   "esm_model_sha256": "9cc0e873f2eecee846dd5a1ae93d0cd0c3e7d24f22590318ae2d4d6431765e68",
   "s3f_script_sha256": "7aa38e6f7a3365329cd9d9e53ce5769d55a2799d08cac8e4e0fe8ad2546c1c52",
   "s3f_code_sha256": "e205bdaf5beffcee99f732b56c0bba11c0641585604d33508519e30ad07f500d",
-  "proenv_scorer_sha256": "61509f8560af07007b85a4b3c57cfa76a3e0b8fef3c4107bcfd030d126180ec8",
+  "adapter_sha256": "6eae883fe517dc99935af8116aef2778e4081dc60f38b1dbb81347ae95125108",
   "scoring_strategy": "masked-marginals with WT structure and surface context",
   "plddt_threshold": 70.0,
   "amino_acids": "ACDEFGHIKLMNPQRSTVWY",

@@ -8,7 +8,7 @@ Set the following paths for the local installation:
 
 ```bash
 DATASET=/path/to/frozen_pfarena_dataset
-STRUCTURES=../../plm_data/structures/manifest.csv
+STRUCTURES=/path/to/structure_manifest.csv
 WORK=/path/to/new_work_directory
 N=1
 I=0
@@ -73,7 +73,7 @@ python finalize_results.py \
   --dataset-dir "$DATASET" --run-dir "$WORK/prosst_2048" \
   --output-schema models/prosst_2048/output_schema_candidates.json
 
-python models/venusrem/prepare_v7_inputs.py \
+python models/venusrem/prepare_inputs.py \
   --dataset-dir "$DATASET" --prosst-run "$WORK/prosst_2048/run.json" \
   --output-dir "$WORK/venusrem_inputs"
 
@@ -90,7 +90,7 @@ S3F-MSA requires a finalized S3F run and one EVE workflow per row of
 five seeds, and then score the context:
 
 ```bash
-python models/s3f_msa/prepare_v7_inputs.py \
+python models/s3f_msa/prepare_inputs.py \
   --dataset-dir "$DATASET" --output-dir "$WORK/s3f_msa_inputs"
 
 python models/s3f_msa/run_stage.py weights \
@@ -105,7 +105,7 @@ python models/s3f_msa/run_stage.py score \
   --input-dir "$WORK/s3f_msa_inputs" --cache-dir "$WORK/cache/s3f_msa" \
   --eve-root /path/to/EVE --index "$J"
 
-python models/s3f_msa/combine_v7.py \
+python models/s3f_msa/combine.py \
   --dataset-dir "$DATASET" --input-dir "$WORK/s3f_msa_inputs" \
   --cache-dir "$WORK/cache/s3f_msa" --s3f-run-dir "$WORK/s3f" \
   --output-dir "$WORK/s3f_msa"

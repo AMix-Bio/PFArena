@@ -15,7 +15,7 @@
   "tokenizer_sha256": "16f3427a0b4fe64c64af96199b846d41b14114d77dcb7e3513b53e2ea788c14a",
   "framework": "transformers",
   "precision": "float32",
-  "implementation": "ProEnv ESM2FitnessScorer model loader with local masked-marginal runner",
+  "implementation": "bundled ESM2FitnessScorer loader with masked-marginal runner",
   "scoring_strategy": "masked-marginals",
   "model_window_tokens": 1024,
   "default_max_residues": 1022,

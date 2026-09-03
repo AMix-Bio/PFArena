@@ -255,7 +255,6 @@ def run_train_locked(args: argparse.Namespace, row: pd.Series) -> None:
             prefix=f".train_{row.wt_id}_{args.seed}_", dir=args.cache_dir
         )
     )
-    temporary.chmod(0o777)
     checkpoint_dir = temporary / "checkpoints"
     log_dir = temporary / "logs"
     checkpoint_dir.mkdir(parents=True)
@@ -446,6 +445,12 @@ def run_score(args: argparse.Namespace, row: pd.Series) -> None:
             "checkpoint_sha256": checkpoint_hashes,
             "artifact_input_hash": artifact_input_hash,
             "artifact_cache_dir": str(artifact_cache.resolve()),
+            "eve_score_source": (
+                "trained_local"
+                if artifact_cache.resolve() == args.cache_dir.resolve()
+                and artifact_inputs.resolve() == args.input_dir.resolve()
+                else "validated_reuse"
+            ),
             "scores": len(raw),
             "score_sha256": sha256_file(output),
         }

@@ -7,27 +7,27 @@
     "mutant",
     "status"
   ],
-  "primary_score": "progen2_score",
+  "primary_score": "progen2_delta",
   "status_values": {
     "ok": "the complete bidirectional sequence-likelihood result is available"
   },
   "sample_outputs": {
     "progen2_score": {
       "dtype": "float64",
-      "description": "ProteinGym ProGen2 score from bidirectional chunk mean NLL values",
+      "description": "negative average of the forward and reverse sums of chunk-level mean NLL, divided by terminalized sequence length; summed across mutated chains",
       "higher_is_better": true
     },
     "bidirectional_mean_nll": {
       "dtype": "float64",
-      "description": "mean of forward_mean_nll and reverse_mean_nll"
+      "description": "per-chain mean of forward_mean_nll and reverse_mean_nll; summed across mutated chains"
     },
     "forward_mean_nll": {
       "dtype": "float64",
-      "description": "forward_nll_sum divided by forward_token_count"
+      "description": "forward_nll_sum divided by forward_token_count per chain; summed across mutated chains"
     },
     "reverse_mean_nll": {
       "dtype": "float64",
-      "description": "reverse_nll_sum divided by reverse_token_count"
+      "description": "reverse_nll_sum divided by reverse_token_count per chain; summed across mutated chains"
     },
     "forward_nll_sum": {
       "dtype": "float64",

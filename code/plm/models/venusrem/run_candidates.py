@@ -27,7 +27,7 @@ from common_io import (
     sha256_json,
     utc_now,
 )
-from run import DEFAULT_PROENV_ROOT, MODEL_METADATA, validate_model_dir
+from core import DEFAULT_ADAPTER_ROOT, MODEL_METADATA, validate_model_dir
 
 
 OUTPUT_SCHEMA = SCRIPT_DIR / "output_schema_candidates.json"
@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-dir", type=Path, required=True)
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--proenv-root", type=Path, default=DEFAULT_PROENV_ROOT)
+    parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
     parser.add_argument("--model-dir", type=Path, required=True)
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
@@ -272,14 +272,14 @@ def main() -> None:
     if args.num_shards < 1 or not 0 <= args.shard_id < args.num_shards:
         raise ValueError("shard-id must satisfy 0 <= shard-id < num-shards")
     if args.chain_sha256 and (args.num_shards != 1 or args.shard_id != 0):
-        raise ValueError("explicit smoke contexts require one shard")
+        raise ValueError("explicit context selection require one shard")
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    sys.path.insert(0, str(args.proenv_root))
+    sys.path.insert(0, str(args.adapter_root))
     import torch
     import transformers
-    from proenv.metrics.sequence.venusrem_de_fitness import (
+    from pfarena_models.metrics.sequence.venusrem import (
         VenusREMFitnessScorer,
         VenusREMProteinContext,
     )
@@ -302,7 +302,7 @@ def main() -> None:
         selected_hashes = sorted(set(args.chain_sha256))
         unknown = set(selected_hashes) - all_chain_hashes
         if unknown:
-            raise ValueError(f"unknown smoke chain contexts: {sorted(unknown)}")
+            raise ValueError(f"unknown selected chain contexts: {sorted(unknown)}")
         selected_rows = contexts[contexts["chain_sha256"].isin(selected_hashes)]
         selected_contexts = selected_rows["context_sha256"].tolist()
         _, loads = balanced_shards(selected_rows, 1)
@@ -316,7 +316,7 @@ def main() -> None:
         estimated_load = loads[args.shard_id]
         partial_run = False
 
-    scorer_path = args.proenv_root / "proenv/metrics/sequence/venusrem_de_fitness.py"
+    scorer_path = args.adapter_root / "pfarena_models/metrics/sequence/venusrem.py"
     scorer_sha256 = sha256_file(scorer_path)
     scorer = VenusREMFitnessScorer(
         str(args.model_dir),
@@ -349,8 +349,8 @@ def main() -> None:
         "model_weights_size_bytes": model_validation["weights_size_bytes"],
         "tokenizer_sha256": model_validation["tokenizer_sha256"],
         "custom_model_code_sha256": model_validation["custom_model_code_sha256"],
-        "proenv_scorer_sha256": scorer_sha256,
-        "base_runner_sha256": sha256_file(SCRIPT_DIR / "run.py"),
+        "adapter_sha256": scorer_sha256,
+        "core_sha256": sha256_file(SCRIPT_DIR / "core.py"),
         "runner_sha256": sha256_file(Path(__file__)),
         "python": platform.python_version(),
         "torch": torch.__version__,
@@ -433,7 +433,7 @@ def main() -> None:
             "computed_contexts": computed_contexts,
             "reused_contexts": reused_contexts,
             "model_dir": str(args.model_dir.resolve()),
-            "proenv_root": str(args.proenv_root.resolve()),
+            "adapter_root": str(args.adapter_root.resolve()),
             "input_dir": str(args.input_dir.resolve()),
             "cache_root": str(cache_root.resolve()),
             "partial_run": partial_run,

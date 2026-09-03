@@ -27,9 +27,9 @@ from common_io import (
     sha256_json,
     utc_now,
 )
-from run import (
+from core import (
     CACHE_FORMAT_VERSION,
-    DEFAULT_PROENV_ROOT,
+    DEFAULT_ADAPTER_ROOT,
     LONG_SEQUENCE_PROTOCOLS,
     MODEL_METADATA,
     position_log_probs,
@@ -44,7 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--proenv-root", type=Path, default=DEFAULT_PROENV_ROOT)
+    parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
     parser.add_argument("--model-dir", type=Path, required=True)
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
@@ -60,7 +60,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--context-sha256",
         action="append",
-        help="score only an explicitly selected chain context for a smoke test",
+        help="score only an explicitly selected chain context",
     )
     return parser.parse_args()
 
@@ -178,16 +178,16 @@ def main() -> None:
     if not 1 <= args.max_window <= MODEL_METADATA["default_max_residues"]:
         raise ValueError("max-window is outside the registered model context")
     if args.context_sha256 and (args.num_shards != 1 or args.shard_id != 0):
-        raise ValueError("explicit smoke contexts require one shard")
+        raise ValueError("explicit context selection require one shard")
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    sys.path.insert(0, str(args.proenv_root))
+    sys.path.insert(0, str(args.adapter_root))
 
     import safetensors
     import torch
     import transformers
-    from proenv.metrics.sequence.esm2_de_fitness import ESM2FitnessScorer
+    from pfarena_models.metrics.sequence.esm2 import ESM2FitnessScorer
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is not available")
@@ -206,7 +206,7 @@ def main() -> None:
         selected_contexts = sorted(set(args.context_sha256))
         unknown = set(selected_contexts) - all_contexts
         if unknown:
-            raise ValueError(f"unknown smoke contexts: {sorted(unknown)}")
+            raise ValueError(f"unknown selected contexts: {sorted(unknown)}")
         estimated_load = sum(
             components.loc[
                 components["context_sha256"].eq(context_sha256), "chain_position"
@@ -238,7 +238,7 @@ def main() -> None:
     model_name_or_path = scorer.model.config.name_or_path
 
     scorer_path = (
-        args.proenv_root / "proenv" / "metrics" / "sequence" / "esm2_de_fitness.py"
+        args.adapter_root / "pfarena_models" / "metrics" / "sequence" / "esm2.py"
     )
     gpu = (
         torch.cuda.get_device_name(torch.cuda.current_device())
@@ -253,8 +253,8 @@ def main() -> None:
         "model_weights_sha256": model_validation["weights_sha256"],
         "model_weights_size_bytes": model_validation["weights_size_bytes"],
         "tokenizer_sha256": model_validation["tokenizer_sha256"],
-        "proenv_scorer_sha256": sha256_file(scorer_path),
-        "base_runner_sha256": sha256_file(SCRIPT_DIR / "run.py"),
+        "adapter_sha256": sha256_file(scorer_path),
+        "core_sha256": sha256_file(SCRIPT_DIR / "core.py"),
         "runner_sha256": sha256_file(Path(__file__)),
         "python": platform.python_version(),
         "torch": torch.__version__,
@@ -343,7 +343,7 @@ def main() -> None:
         "reused_positions": reused_positions_total,
         "model_dir": str(args.model_dir.resolve()),
         "model_name_or_path": model_name_or_path,
-        "proenv_root": str(args.proenv_root.resolve()),
+        "adapter_root": str(args.adapter_root.resolve()),
         "cache_root": str(cache_root.resolve()),
         "partial_run": partial_run,
     }

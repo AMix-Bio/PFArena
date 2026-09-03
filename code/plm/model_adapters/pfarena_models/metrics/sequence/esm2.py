@@ -1,5 +1,5 @@
 """
-Directed-evolution fitness scoring with ESM2 masked-marginal method.
+ESM-2 masked-marginal scoring adapter.
 
 Score definition (per mutant string):
   fitness_score = sum(logP(mut_aa) - logP(wt_aa))
@@ -105,7 +105,7 @@ def _get_window(
 
 
 class ESM2FitnessScorer:
-    """ESM2 masked-marginal scorer reused by esm2_de_fitness service."""
+    """ESM2 masked-marginal scorer reused by esm2 service."""
 
     def __init__(
         self,
@@ -126,7 +126,7 @@ class ESM2FitnessScorer:
 
         if "esm2" not in model_dir.lower():
             raise ValueError(
-                "esm2_de_fitness is ESM2-only; please provide an ESM2 checkpoint path"
+                "esm2 is ESM2-only; please provide an ESM2 checkpoint path"
             )
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)

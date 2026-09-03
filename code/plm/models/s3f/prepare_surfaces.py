@@ -1,42 +1,17 @@
 #!/usr/bin/env python3
-"""Precompute S3F surface graphs without loading the S3F model."""
+"""Utilities for memory-bounded S3F surface preprocessing."""
 
 from __future__ import annotations
 
-import argparse
-import gc
 import importlib.util
-import json
-import os
 import pickle
-import random
 import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parents[1]
 CURVATURE_CHUNK_SIZE = 512
-sys.path.insert(0, str(PROJECT_ROOT))
-
-from common_io import atomic_write_json, sha256_file
-from run import balanced_shards, validate_dataset, validate_inputs
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset-dir", type=Path, required=True)
-    parser.add_argument("--input-dir", type=Path, required=True)
-    parser.add_argument("--surface-dir", type=Path, required=True)
-    parser.add_argument("--s3f-script", type=Path, required=True)
-    parser.add_argument("--device", default="cuda")
-    parser.add_argument("--shard-id", type=int, default=0)
-    parser.add_argument("--num-shards", type=int, default=1)
-    parser.add_argument("--wt-id")
-    return parser.parse_args()
 
 
 def load_s3f_module(path: Path):
@@ -159,126 +134,3 @@ def validate_surface(path: Path, sequence_length: int) -> dict[str, int]:
         "surface_points": int(points.shape[0]),
         "res2surf_width": int(np.prod(res2surf.shape[1:])),
     }
-
-
-def validate_existing(
-    output_path: Path,
-    metadata_path: Path,
-    context,
-    pdb_path: Path,
-    s3f_script: Path,
-) -> dict[str, int]:
-    if not output_path.is_file() or not metadata_path.is_file():
-        raise FileExistsError(f"incomplete surface cache: {output_path.parent}")
-    summary = validate_surface(output_path, int(context["sequence_length"]))
-    metadata = json.loads(metadata_path.read_text())
-    expected = {
-        "wt_id": str(context.name),
-        "sequence_sha256": str(context["sequence_sha256"]),
-        "sequence_length": int(context["sequence_length"]),
-        "pdb_sha256": sha256_file(pdb_path),
-        "surface_sha256": sha256_file(output_path),
-        "s3f_script_sha256": sha256_file(s3f_script),
-        "preprocessor_sha256": sha256_file(Path(__file__)),
-        "curvature_implementation": "chunked_pytorch_equivalent_v1",
-        "curvature_chunk_size": CURVATURE_CHUNK_SIZE,
-        **summary,
-    }
-    for field, value in expected.items():
-        if metadata.get(field) != value:
-            raise ValueError(f"{output_path.parent}: cached surface {field} differs")
-    return summary
-
-
-def main() -> None:
-    args = parse_args()
-    if args.num_shards < 1 or not 0 <= args.shard_id < args.num_shards:
-        raise ValueError("shard-id must satisfy 0 <= shard-id < num-shards")
-
-    dataset = json.loads((args.dataset_dir / "dataset.json").read_text())
-    proteins = pd.read_csv(args.dataset_dir / "proteins.csv")
-    validate_dataset(args.dataset_dir, dataset, proteins)
-    _, contexts = validate_inputs(args.input_dir, dataset, proteins)
-    if args.wt_id:
-        if args.wt_id not in set(contexts["wt_id"]):
-            raise ValueError(f"unknown wt-id: {args.wt_id}")
-        selected = [args.wt_id]
-    else:
-        selected = balanced_shards(contexts, args.num_shards)[args.shard_id]
-
-    import torch
-    from torch.nn import functional as F
-
-    device = torch.device(args.device)
-    if device.type == "cuda" and not torch.cuda.is_available():
-        raise RuntimeError("CUDA is not available")
-    module = load_s3f_module(args.s3f_script)
-    install_chunked_curvature()
-    context_by_wt = contexts.set_index("wt_id")
-    for wt_id in selected:
-        context = context_by_wt.loc[wt_id]
-        pdb_path = Path(context["pdb_path"])
-        output_dir = args.surface_dir / wt_id
-        output_path = output_dir / f"{wt_id}.pkl"
-        metadata_path = output_dir / f"{wt_id}.json"
-        if output_path.exists() or metadata_path.exists():
-            summary = validate_existing(
-                output_path, metadata_path, context, pdb_path, args.s3f_script
-            )
-            print(
-                f"{wt_id}: {summary['surface_points']} surface points (reused)",
-                flush=True,
-            )
-            continue
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        seed = int(str(context["sequence_sha256"])[:8], 16)
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        if device.type == "cuda":
-            torch.cuda.manual_seed_all(seed)
-        temporary = output_dir / f".{wt_id}.{os.getpid()}.tmp.pkl"
-        try:
-            module._write_surface_from_pdb(
-                str(pdb_path), str(temporary), torch, F, device
-            )
-            summary = validate_surface(temporary, int(context["sequence_length"]))
-            os.replace(temporary, output_path)
-        finally:
-            if temporary.exists():
-                temporary.unlink()
-        atomic_write_json(
-            {
-                "wt_id": wt_id,
-                "sequence_sha256": str(context["sequence_sha256"]),
-                "sequence_length": int(context["sequence_length"]),
-                "pdb_path": str(pdb_path.resolve()),
-                "pdb_sha256": sha256_file(pdb_path),
-                "surface_path": str(output_path.resolve()),
-                "surface_sha256": sha256_file(output_path),
-                "s3f_script_sha256": sha256_file(args.s3f_script),
-                "preprocessor_sha256": sha256_file(Path(__file__)),
-                "curvature_implementation": "chunked_pytorch_equivalent_v1",
-                "curvature_chunk_size": CURVATURE_CHUNK_SIZE,
-                "seed": seed,
-                "device": str(device),
-                "torch": torch.__version__,
-                "torch_cuda": torch.version.cuda,
-                "gpu": (
-                    torch.cuda.get_device_name(device)
-                    if device.type == "cuda"
-                    else None
-                ),
-                **summary,
-            },
-            metadata_path,
-        )
-        print(f"{wt_id}: {summary['surface_points']} surface points", flush=True)
-        gc.collect()
-        if device.type == "cuda":
-            torch.cuda.empty_cache()
-
-
-if __name__ == "__main__":
-    main()

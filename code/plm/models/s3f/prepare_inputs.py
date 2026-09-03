@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze the chain-level AF3 structures required by S3F on T1--T4."""
+"""Prepare the chain-level structures required by S3F on T1--T4."""
 
 from __future__ import annotations
 
@@ -46,6 +46,22 @@ def main() -> None:
 
     dataset, proteins, samples, substitutions, _ = load_model_dataset(args.dataset_dir)
     structures = pd.read_csv(args.structure_manifest)
+    required_structure_columns = {
+        "dataset_hash",
+        "context_sha256",
+        "sequence_length",
+        "structure_status",
+        "structure_qc",
+        "structure_source",
+        "pdb_path",
+        "pdb_sha256",
+    }
+    missing_columns = required_structure_columns - set(structures.columns)
+    if missing_columns:
+        raise ValueError(
+            "structure manifest is missing columns: "
+            + ", ".join(sorted(missing_columns))
+        )
     chain_sequences: dict[str, str] = {}
     chain_lookup: dict[tuple[str, int], str] = {}
     for protein in proteins.itertuples(index=False):
@@ -90,7 +106,7 @@ def main() -> None:
         context_id = structure.context_sha256[:16]
         source = resolve_structure_path(structure.pdb_path, args.structure_manifest)
         if sha256_file(source) != structure.pdb_sha256:
-            raise ValueError(f"{context_id}: AF3 PDB differs from the manifest")
+            raise ValueError(f"{context_id}: PDB differs from the structure manifest")
         target = structure_dir / f"{context_id}.pdb"
         shutil.copyfile(source, target)
         if sha256_file(target) != structure.pdb_sha256:

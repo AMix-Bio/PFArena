@@ -1,8 +1,8 @@
 """
-Directed-evolution fitness scoring with VenusREM / ProSST logits.
+VenusREM scoring adapter using ProSST logits.
 
 The implementation follows VenusREM's upstream ``compute_fitness.py`` scoring
-rule while keeping ProEnv's directed-evolution service contract:
+rule through a reusable scoring interface:
 
     fitness_score = sum(logP(mut_aa) - logP(wt_aa))
 
@@ -156,7 +156,7 @@ def _model_suffix(model_name_or_path: str, structure_vocab_size: int | str) -> s
 
 
 class VenusREMFitnessScorer:
-    """VenusREM scorer reused by the ``venusrem_de_fitness`` service."""
+    """VenusREM scorer reused by the ``venusrem`` service."""
 
     def __init__(
         self,

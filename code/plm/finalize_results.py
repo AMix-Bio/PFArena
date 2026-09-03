@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_json, utc_now
-from v7_io import load_v7_dataset
+from dataset_io import load_dataset
 
 
 IDENTITY = ["sample_id", "subset", "candidate_group_id", "source_assay", "mutant", "status"]
@@ -32,7 +32,7 @@ def main() -> None:
     published = [args.run_dir / name for name in ("predictions.csv", "context_predictions.csv", "summary.json", "run.json", "tasks")]
     if any(path.exists() for path in published):
         raise FileExistsError("run directory already contains finalized outputs")
-    dataset, _, samples, _, queries, contexts, _, _ = load_v7_dataset(args.dataset_dir)
+    dataset, _, samples, _, queries, contexts, _, _ = load_dataset(args.dataset_dir)
     schema = json.loads(args.output_schema.read_text())
     if schema.get("identity_columns") != IDENTITY:
         raise ValueError("output schema identity columns differ")
@@ -56,7 +56,7 @@ def main() -> None:
     config_hashes, frames = set(), []
     for item in shard_metadata:
         if item.get("partial_run", False):
-            raise ValueError("smoke-test shard cannot be finalized")
+            raise ValueError("partial shard cannot be finalized")
         if item.get("dataset_id") != dataset["dataset_id"] or item.get("dataset_hash") != dataset["dataset_hash"]:
             raise ValueError("shard targets a different dataset")
         config = item["run_config"]

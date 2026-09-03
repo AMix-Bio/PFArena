@@ -21,8 +21,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from model_dataset_io import load_model_dataset
 from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_json, utc_now
-from run import (
-    DEFAULT_PROENV_ROOT,
+from core import (
+    DEFAULT_ADAPTER_ROOT,
     MODEL_METADATA,
     validate_model_dir,
     validate_prosst_repo,
@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-dir", type=Path, required=True)
     parser.add_argument("--structure-manifest", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--proenv-root", type=Path, default=DEFAULT_PROENV_ROOT)
+    parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
     parser.add_argument("--model-dir", type=Path, required=True)
     parser.add_argument("--prosst-repo-dir", type=Path, required=True)
     parser.add_argument("--cache-dir", type=Path, required=True)
@@ -292,15 +292,15 @@ def main() -> None:
     if args.structure_batch_size < 1:
         raise ValueError("structure-batch-size must be positive")
     if args.context_sha256 and (args.num_shards != 1 or args.shard_id != 0):
-        raise ValueError("explicit smoke contexts require one shard")
+        raise ValueError("explicit context selection require one shard")
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    sys.path.insert(0, str(args.proenv_root))
+    sys.path.insert(0, str(args.adapter_root))
     import joblib
     import torch
     import transformers
-    from proenv.metrics.sequence.prosst2048_de_fitness import ProSST2048FitnessScorer
+    from pfarena_models.metrics.sequence.prosst2048 import ProSST2048FitnessScorer
 
     if args.device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is not available")
@@ -335,7 +335,7 @@ def main() -> None:
         selected_contexts = sorted(set(args.context_sha256))
         unknown = set(selected_contexts) - all_contexts
         if unknown:
-            raise ValueError(f"unknown smoke contexts: {sorted(unknown)}")
+            raise ValueError(f"unknown selected contexts: {sorted(unknown)}")
         selected = components[components["context_sha256"].isin(selected_contexts)]
         _, loads = balanced_shards(selected, chain_sequences, max_residues, 1)
         estimated_load = loads[0]
@@ -348,7 +348,7 @@ def main() -> None:
         estimated_load = loads[args.shard_id]
         partial_run = False
 
-    scorer_path = args.proenv_root / "proenv/metrics/sequence/prosst2048_de_fitness.py"
+    scorer_path = args.adapter_root / "pfarena_models/metrics/sequence/prosst2048.py"
     cache_config = {
         "model_id": MODEL_METADATA["model_id"],
         "checkpoint": MODEL_METADATA["checkpoint"],
@@ -358,8 +358,8 @@ def main() -> None:
         "model_weights_size_bytes": model_validation["weights_size_bytes"],
         "tokenizer_sha256": model_validation["tokenizer_sha256"],
         "custom_model_code_sha256": model_validation["custom_model_code_sha256"],
-        "proenv_scorer_sha256": sha256_file(scorer_path),
-        "base_runner_sha256": sha256_file(SCRIPT_DIR / "run.py"),
+        "adapter_sha256": sha256_file(scorer_path),
+        "core_sha256": sha256_file(SCRIPT_DIR / "core.py"),
         "runner_sha256": sha256_file(Path(__file__)),
         **prosst_validation,
         "python": platform.python_version(),
@@ -435,7 +435,7 @@ def main() -> None:
             "reused_contexts": reused_contexts,
             "model_dir": str(args.model_dir.resolve()),
             "prosst_repo_dir": str(args.prosst_repo_dir.resolve()),
-            "proenv_root": str(args.proenv_root.resolve()),
+            "adapter_root": str(args.adapter_root.resolve()),
             "cache_root": str(cache_root.resolve()), "partial_run": partial_run,
         },
         args.output_dir / "shards" / f"shard_{args.shard_id:04d}.json",

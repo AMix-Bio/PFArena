@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare full-chain EVE inputs for benchmark S3F-MSA."""
+"""Prepare full-chain EVE inputs for S3F-MSA."""
 
 from __future__ import annotations
 
@@ -15,10 +15,10 @@ MODEL_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_ROOT.parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_files, sha256_json, utc_now
+from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_files, utc_now
 from model_dataset_io import load_model_dataset
 from alignment import convert_a3m
-from v7_io import load_v7_dataset, resolve_dataset_path
+from dataset_io import load_dataset, resolve_dataset_path
 
 
 def main() -> None:
@@ -27,9 +27,9 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     if args.output_dir.exists():
-        raise FileExistsError(f"S3F-MSA v7 inputs already exist: {args.output_dir}")
+        raise FileExistsError(f"S3F-MSA inputs already exist: {args.output_dir}")
     dataset, proteins, samples, substitutions, groups = load_model_dataset(args.dataset_dir)
-    *_, msa = load_v7_dataset(args.dataset_dir)
+    *_, msa = load_dataset(args.dataset_dir)
     msa_index = msa.set_index("context_sha256")
 
     assay_metadata = groups[["source_assay", "taxon_domain"]].drop_duplicates()
@@ -47,7 +47,7 @@ def main() -> None:
     components["chain_sha256"] = [chain_lookup[(sequence_hash, int(chain_id))] for sequence_hash, chain_id in zip(components.sequence_sha256, components.chain_id)]
     components["theta"] = [0.01 if str(taxon[assay]).strip().lower() == "virus" else 0.2 for assay in components.source_assay]
 
-    context_specs, sample_context = {}, {}
+    context_specs = {}
     for (assay, parent_hash, chain_id), frame in components.groupby(["source_assay", "sequence_sha256", "chain_id"], sort=True):
         chain_hash = frame.chain_sha256.iloc[0]
         theta = float(frame.theta.iloc[0])
@@ -56,9 +56,8 @@ def main() -> None:
         candidate_id = chain_hash[:16]
         key = (chain_hash, str(msa_row.a3m_sha256), theta)
         context_specs.setdefault(key, {"context_id": candidate_id, "chain_hash": chain_hash, "sequence": sequence, "msa_path": resolve_dataset_path(args.dataset_dir, msa_row.a3m_path), "msa_sha256": str(msa_row.a3m_sha256), "theta": theta, "frames": []})["frames"].append(frame)
-        sample_context[(assay, parent_hash, int(chain_id))] = key
 
-    context_rows, sample_rows, alignments, mutation_files, key_to_id = [], [], [], [], {}
+    context_rows, sample_rows, alignments, mutation_files = [], [], [], []
     for protein_index, key in enumerate(sorted(context_specs)):
         spec = context_specs[key]
         if sha256_file(spec["msa_path"]) != spec["msa_sha256"]:
@@ -67,7 +66,6 @@ def main() -> None:
         qc = convert_a3m(spec["msa_path"], alignment, spec["context_id"], spec["sequence"], 1, None)
         a2m_hash = sha256_file(alignment)
         context_id = spec["context_id"]
-        key_to_id[key] = context_id
         combined = pd.concat(spec["frames"], ignore_index=True)
         combined["annotation"] = combined.wt_aa + combined.chain_position.astype(str) + combined.mut_aa
         eve_mutants = combined.sort_values(["sample_id", "component_index"]).groupby("sample_id")["annotation"].agg(":".join)
@@ -75,7 +73,7 @@ def main() -> None:
         mutation_path = args.output_dir / "mutations" / f"{context_id}.csv"
         atomic_write_csv(mutation_frame, mutation_path)
         for sample_id, mutant in eve_mutants.items():
-            sample_rows.append({"sample_id": sample_id, "context_id": context_id, "eve_mutant": mutant, "eve_score_source": "trained_local"})
+            sample_rows.append({"sample_id": sample_id, "context_id": context_id, "eve_mutant": mutant})
         assays = sorted(set(combined.source_assay.astype(str)))
         context_rows.append({
             "protein_index": protein_index, "DMS_id": context_id, "wt_id": context_id, "context_id": context_id,
@@ -83,7 +81,7 @@ def main() -> None:
             "sequence_sha256": spec["chain_hash"], "sequence_length": len(spec["sequence"]), "chain_sequence_length": len(spec["sequence"]),
             "focus_start": 1, "focus_end": len(spec["sequence"]), "MSA_filename": alignment.name, "DMS_filename": mutation_path.name,
             "MSA_theta": spec["theta"], "weight_file_name": f"{context_id}_theta_{spec['theta']}.npy",
-            "msa_policy": "uniref100_mmseqs2_full_chain", "proteingym_reference_msa_filename": "", "proteingym_reference_msa_depth": -1,
+            "msa_policy": "uniref100_mmseqs2_full_chain",
             "source_a3m_path": str(spec["msa_path"].resolve()), "source_a3m_sha256": spec["msa_sha256"], "a2m_sha256": a2m_hash,
             "mutation_sha256": sha256_file(mutation_path), "source_assays_json": json.dumps(assays), "source_assay_count": len(assays),
             "unique_mutants": len(mutation_frame), **qc,
@@ -93,7 +91,7 @@ def main() -> None:
     mapping = pd.DataFrame(context_rows).sort_values("protein_index")
     sample_mapping = pd.DataFrame(sample_rows).merge(samples[["sample_id", "subset", "candidate_group_id", "source_assay", "sample_role", "mutant", "mutated_sequence"]], on="sample_id", validate="many_to_one")
     if sample_mapping.duplicated(["sample_id", "context_id"]).any() or set(sample_mapping.sample_id) != set(samples.sample_id):
-        raise ValueError("S3F-MSA v7 sample-chain mapping is incomplete")
+        raise ValueError("S3F-MSA sample-chain mapping is incomplete")
     new_contexts = mapping[["protein_index", "context_id"]].reset_index(drop=True)
     new_contexts.insert(0, "task_index", range(len(new_contexts)))
     score_contexts = mapping[["protein_index", "context_id"]].reset_index(drop=True)

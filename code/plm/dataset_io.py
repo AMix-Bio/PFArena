@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Load and validate the frozen benchmark inference dataset."""
+"""Load and validate a canonical frozen protein-model dataset."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from common_io import sha256_files, sha256_json
+from common_io import sha256_files
 
 
 DATA_FILES = (
@@ -104,7 +104,7 @@ def _validate_components(
 
 
 
-def load_v7_dataset(
+def load_dataset(
     dataset_dir: Path,
 ) -> tuple[dict, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     metadata = json.loads((dataset_dir / "dataset.json").read_text())
@@ -112,7 +112,7 @@ def load_v7_dataset(
         raise ValueError("expected frozen schema_version 4 dataset")
     paths = [dataset_dir / name for name in DATA_FILES]
     if sha256_files(paths) != metadata.get("dataset_hash"):
-        raise ValueError("v7 normalized files do not match dataset.json")
+        raise ValueError("normalized files do not match dataset.json")
     proteins, samples, substitutions, queries, context_samples, context_substitutions, provided_context, msa = (
         pd.read_csv(path, keep_default_na=False) for path in paths
     )
@@ -142,16 +142,8 @@ def load_v7_dataset(
     all_samples = pd.concat([samples, context_samples], ignore_index=True)
     if all_samples["sample_id"].duplicated().any():
         raise ValueError("evaluation and context sample IDs overlap")
-    for sample in all_samples.itertuples(index=False):
-        identity = {
-            "dataset_id": metadata["dataset_id"],
-            "task": sample.task,
-            "query_id": sample.query_id,
-            "sample_role": sample.sample_role,
-            "mutant": sample.mutant,
-        }
-        if sha256_json(identity) != sample.sample_id:
-            raise ValueError(f"{sample.sample_id}: invalid deterministic sample ID")
+    if not all_samples["sample_id"].astype(str).str.fullmatch(r"[0-9a-f]{64}").all():
+        raise ValueError("sample_id must be a lowercase SHA256 identifier")
 
     if msa["context_sha256"].duplicated().any():
         raise ValueError("duplicate MSA chain context")

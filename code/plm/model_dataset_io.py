@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from v7_io import load_v7_dataset
+from dataset_io import load_dataset
 
 
 def load_model_dataset(
@@ -22,7 +22,7 @@ def load_model_dataset(
         context_samples,
         context_substitutions,
         _,
-    ) = load_v7_dataset(dataset_dir)
+    ) = load_dataset(dataset_dir)
     samples = pd.concat([samples, context_samples], ignore_index=True)
     substitutions = pd.concat(
         [substitutions, context_substitutions], ignore_index=True
@@ -31,7 +31,3 @@ def load_model_dataset(
     samples["candidate_group_id"] = samples["query_id"]
     groups = queries.rename(columns={"task": "subset", "query_id": "candidate_group_id"})
     return metadata, proteins, samples, substitutions, groups
-
-
-def is_v7_dataset(metadata: dict) -> bool:
-    return metadata.get("schema_version") == 4

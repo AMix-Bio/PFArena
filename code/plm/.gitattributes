@@ -1,2 +1,2 @@
 results/**/*.gz filter=lfs diff=lfs merge=lfs -text
-data/structures/** filter=lfs diff=lfs merge=lfs -text
+results/**/evaluator_predictions.csv filter=lfs diff=lfs merge=lfs -text

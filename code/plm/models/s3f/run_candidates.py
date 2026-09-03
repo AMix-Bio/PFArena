@@ -30,9 +30,9 @@ from common_io import (
     sha256_json,
     utc_now,
 )
-from run import (
+from core import (
     AMINO_ACIDS,
-    DEFAULT_PROENV_ROOT,
+    DEFAULT_ADAPTER_ROOT,
     MODEL,
     MODEL_WINDOW,
     atomic_save_cache,
@@ -46,7 +46,6 @@ from prepare_surfaces import validate_surface
 
 
 OUTPUT_SCHEMA = SCRIPT_DIR / "output_schema_candidates.json"
-LEGACY_CANDIDATE_PREPROCESSOR_SHA256 = "cc546fa1d13558143b23c86cdbf9e133e16664cc8f9b4e4a0ff98f9dfad7c5f8"
 
 
 def parse_args() -> argparse.Namespace:
@@ -56,7 +55,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--surface-dir", type=Path, required=True)
-    parser.add_argument("--proenv-root", type=Path, default=DEFAULT_PROENV_ROOT)
+    parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
     parser.add_argument("--s3f-script", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--esm-model-dir", type=Path, required=True)
@@ -157,9 +156,6 @@ def resolve_project_path(value: str) -> Path:
 
 def candidate_surface(context: pd.Series, surface_root: Path) -> tuple[Path, Path]:
     context_id = str(context.name)
-    if context["structure_source"] != "fresh_v7_af3":
-        raise ValueError(f"{context_id}: unknown S3F structure source")
-
     surface_dir = surface_root / context_id
     surface_path = surface_dir / f"{context_id}.pkl"
     metadata_path = surface_dir / f"{context_id}.json"
@@ -181,10 +177,9 @@ def candidate_surface(context: pd.Series, surface_root: Path) -> tuple[Path, Pat
     for field, value in expected.items():
         if metadata.get(field) != value:
             raise ValueError(f"{surface_dir}: surface {field} differs")
-    if metadata.get("preprocessor_sha256") not in {
-        LEGACY_CANDIDATE_PREPROCESSOR_SHA256,
-        sha256_file(SCRIPT_DIR / "prepare_candidate_surfaces.py"),
-    }:
+    if metadata.get("preprocessor_sha256") != sha256_file(
+        SCRIPT_DIR / "prepare_candidate_surfaces.py"
+    ):
         raise ValueError(f"{surface_dir}: surface preprocessor differs")
     return surface_path, surface_dir
 
@@ -243,9 +238,9 @@ def main() -> None:
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    sys.path.insert(0, str(args.proenv_root))
+    sys.path.insert(0, str(args.adapter_root))
     import torch
-    from proenv.metrics.sequence.s3f_de_fitness import S3FFitnessScorer
+    from pfarena_models.metrics.sequence.s3f import S3FFitnessScorer
 
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is not available")
@@ -262,7 +257,7 @@ def main() -> None:
     if args.num_shards > len(contexts):
         raise ValueError("num-shards exceeds the number of S3F chain contexts")
 
-    scorer_path = args.proenv_root / "proenv/metrics/sequence/s3f_de_fitness.py"
+    scorer_path = args.adapter_root / "pfarena_models/metrics/sequence/s3f.py"
     s3f_code_files = sorted(args.s3f_script.parent.rglob("*.py"))
     esm_files = sorted(path for path in args.esm_model_dir.rglob("*") if path.is_file())
     if not s3f_code_files or not esm_files:
@@ -272,7 +267,7 @@ def main() -> None:
         "s3f_script_sha256": sha256_file(args.s3f_script),
         "s3f_code_sha256": sha256_files(s3f_code_files),
         "esm_model_sha256": sha256_files(esm_files),
-        "proenv_scorer_sha256": sha256_file(scorer_path),
+        "adapter_sha256": sha256_file(scorer_path),
     }
     for field, observed in model_files.items():
         if observed != MODEL[field]:
@@ -282,7 +277,7 @@ def main() -> None:
         "model_id": MODEL["model_id"],
         "method": MODEL["method"],
         **model_files,
-        "base_runner_sha256": sha256_file(SCRIPT_DIR / "run.py"),
+        "core_sha256": sha256_file(SCRIPT_DIR / "core.py"),
         "runner_sha256": sha256_file(Path(__file__)),
         "input_hash": inputs["input_hash"],
         "python": platform.python_version(),

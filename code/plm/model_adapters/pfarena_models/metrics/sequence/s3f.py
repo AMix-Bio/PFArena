@@ -1,8 +1,8 @@
 """
-Directed-evolution fitness scoring through the local S3F inference script.
+S3F scoring adapter using the upstream inference script.
 
-The underlying S3F model needs a wildtype PDB file in addition to the
-wildtype sequence and mutation string.
+The S3F model needs a wild-type PDB file in addition to the wild-type sequence
+and mutation string.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ class ParsedVariant:
 
 
 class S3FFitnessScorer:
-    """Reusable S3F scorer for the s3f_de_fitness service."""
+    """Reusable S3F scorer for the s3f service."""
 
     def __init__(
         self,
@@ -97,7 +97,7 @@ class S3FFitnessScorer:
         if script_dir not in sys.path:
             sys.path.insert(0, script_dir)
 
-        module_name = "_proenv_s3f_score_s3f_fitness"
+        module_name = "_pfarena_s3f_score_s3f_fitness"
         cached = sys.modules.get(module_name)
         if cached is not None:
             self._module = cached

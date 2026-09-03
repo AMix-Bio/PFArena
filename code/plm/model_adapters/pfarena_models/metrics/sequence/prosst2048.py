@@ -1,13 +1,12 @@
 """
-Directed-evolution fitness scoring with the local ProSST-2048 checkpoint.
+ProSST-2048 scoring adapter.
 
 Score definition:
   fitness_score = sum(logP(mut_aa | WT sequence, WT structure)
                       - logP(wt_aa | WT sequence, WT structure))
 
-This module adapts the standalone ProSST ``directed_evolution_fitness.py``
-workflow for ProEnv services.  ProSST needs a wildtype PDB file in addition to
-the wildtype sequence and mutation string.
+This module adapts the standalone ProSST scoring workflow. ProSST needs a
+wild-type PDB file in addition to the wild-type sequence and mutation string.
 """
 
 from __future__ import annotations
@@ -425,7 +424,7 @@ def _resolve_device(device: str | None) -> torch.device:
 
 
 class ProSST2048FitnessScorer:
-    """Reusable ProSST-2048 scorer for ProEnv directed-evolution service."""
+    """Reusable ProSST-2048 scorer."""
 
     def __init__(
         self,

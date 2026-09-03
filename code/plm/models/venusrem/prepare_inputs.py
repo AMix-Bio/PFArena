@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare v7 VenusREM sequence, structure-token, and MSA inputs."""
+"""Prepare VenusREM sequence, structure-token, and MSA inputs."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_json, utc_now
 from model_dataset_io import load_model_dataset
 from input_utils import MAX_RESIDUES, inference_window, load_prosst_cache_root, normalize_a3m, write_text
-from v7_io import load_v7_dataset, resolve_dataset_path
+from dataset_io import load_dataset, resolve_dataset_path
 
 
 def main() -> None:
@@ -30,9 +30,9 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     if args.output_dir.exists():
-        raise FileExistsError(f"VenusREM v7 inputs already exist: {args.output_dir}")
+        raise FileExistsError(f"VenusREM inputs already exist: {args.output_dir}")
     dataset, proteins, samples, substitutions, _ = load_model_dataset(args.dataset_dir)
-    *_, msa = load_v7_dataset(args.dataset_dir)
+    *_, msa = load_dataset(args.dataset_dir)
     msa_index = msa.set_index("context_sha256")
     chain_lookup, chain_sequences, representatives = {}, {}, {}
     for protein in proteins.itertuples(index=False):
@@ -166,7 +166,7 @@ def main() -> None:
     if contexts["chain_sha256"].duplicated().any() or int(
         contexts.expected_samples.sum()
     ) != len(assignments):
-        raise ValueError("VenusREM v7 context coverage differs")
+        raise ValueError("VenusREM context coverage differs")
     path = args.output_dir / "contexts.csv"
     atomic_write_csv(contexts, path)
     atomic_write_json(
@@ -192,7 +192,7 @@ def main() -> None:
                 contexts.msa_lowercase_insertions_removed.sum()
             ),
             "msa_unknown_residues": int(contexts.msa_unknown_residues.sum()),
-            "structure_tokens": "fresh full-chain ProSST-2048 tokens from the finalized v7 ProSST run",
+            "structure_tokens": "full-chain ProSST-2048 tokens from the compatible finalized ProSST run",
             "prosst_run": str(args.prosst_run.resolve()),
             "prosst_run_config_sha256": prosst_run_config_sha256,
             "prosst_cache_root": str(prosst_cache_root.resolve()),

@@ -15,10 +15,10 @@
     "n_head": 16,
     "rotary_dim": 48
   },
-  "framework": "ProEnv vendored Transformers ProGen implementation",
+  "framework": "bundled Transformers-compatible ProGen implementation",
   "precision": "float32",
   "scoring_strategy": "bidirectional causal likelihood with fixed terminal tokens and non-overlapping chunks",
-  "tokenizer_file": "proenv/models/progen/tokenizer.json",
+  "tokenizer_file": "pfarena_models/models/progen/tokenizer.json",
   "tokenizer_sha256": "e56176ef2390f7a0ec29930aaa41983406085e026cb6f99f8a6e180b3b3a56bc",
   "configuration_code_sha256": "a366655a755ebbb11861bcba58a7b3f719c0ec43d7c9a729a44869d17942bd7e",
   "modeling_code_sha256": "34fc2e84dae2d8558c0acc3bcbb0bcc7a7420cce885de6ddb780e3e57ecb5e10",

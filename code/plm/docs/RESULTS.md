@@ -4,7 +4,8 @@ Each model directory under `results/` contains:
 
 - `predictions.csv.gz`: all 607,269 evaluation candidates and every retained model output.
 - `context_predictions.csv.gz`: all 28,676 provided-context samples.
-- `chain_contributions.csv.gz`: pre-aggregation chain-level outputs.
+- `chain_contributions.csv.gz`: pre-aggregation chain-level outputs for the five
+  direct inference models; S3F-MSA stores its already aggregated sample outputs.
 - `tasks/<task>/evaluator_predictions.csv`: the exact two-column ranking input plus mutant identity.
 - `evaluation/<task>`: per-query and summary metrics from the unified evaluator.
 - `run.json` and `output_schema.json`: model, dataset, score-direction, and provenance metadata.

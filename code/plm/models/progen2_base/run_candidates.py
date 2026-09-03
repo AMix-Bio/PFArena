@@ -21,9 +21,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from model_dataset_io import load_model_dataset
 from common_io import atomic_write_csv, atomic_write_json, sha256_file, sha256_json, utc_now
-from run import (
+from core import (
     CACHE_FORMAT_VERSION,
-    DEFAULT_PROENV_ROOT,
+    DEFAULT_ADAPTER_ROOT,
     METRIC_NAMES,
     MODEL_METADATA,
     atomic_save_cache,
@@ -41,7 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model-dir", type=Path, required=True)
-    parser.add_argument("--proenv-root", type=Path, default=DEFAULT_PROENV_ROOT)
+    parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
     parser.add_argument("--batch-size", type=int, default=8)
@@ -212,16 +212,16 @@ def main() -> None:
     if args.batch_size < 1 or args.cache_block_size < 1:
         raise ValueError("batch sizes must be positive")
     if args.context_sha256 and (args.num_shards != 1 or args.shard_id != 0):
-        raise ValueError("explicit smoke contexts require one shard")
+        raise ValueError("explicit context selection require one shard")
 
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    sys.path.insert(0, str(args.proenv_root))
+    sys.path.insert(0, str(args.adapter_root))
 
     import tokenizers
     import torch
     import transformers
-    from proenv.models.progen import ProGenForCausalLM
+    from pfarena_models.models.progen import ProGenForCausalLM
     from tokenizers import Tokenizer
 
     if args.device == "cuda" and not torch.cuda.is_available():
@@ -235,7 +235,7 @@ def main() -> None:
     )
     variants, chain_sequences = build_variants(proteins, samples, substitutions)
     all_contexts = set(variants["context_sha256"])
-    validation = validate_model(args.model_dir, args.proenv_root)
+    validation = validate_model(args.model_dir, args.adapter_root)
     tokenizer = Tokenizer.from_file(str(validation["tokenizer_path"]))
     if tokenizer.get_vocab_size() != 30:
         raise ValueError("deployed ProGen tokenizer vocabulary is not 30 tokens")
@@ -254,7 +254,7 @@ def main() -> None:
         selected_contexts = sorted(set(args.context_sha256))
         unknown = set(selected_contexts) - all_contexts
         if unknown:
-            raise ValueError(f"unknown smoke contexts: {sorted(unknown)}")
+            raise ValueError(f"unknown selected contexts: {sorted(unknown)}")
         estimated_load = sum(
             (variants.loc[variants["context_sha256"].eq(context), "variant_key"].nunique() + 1)
             * attention_cost(len(chain_sequences[context]), context_length)
@@ -287,7 +287,7 @@ def main() -> None:
         "tokenizer_sha256": MODEL_METADATA["tokenizer_sha256"],
         "configuration_code_sha256": MODEL_METADATA["configuration_code_sha256"],
         "modeling_code_sha256": MODEL_METADATA["modeling_code_sha256"],
-        "base_runner_sha256": sha256_file(SCRIPT_DIR / "run.py"),
+        "core_sha256": sha256_file(SCRIPT_DIR / "core.py"),
         "runner_sha256": sha256_file(Path(__file__)),
         "python": platform.python_version(),
         "torch": torch.__version__,
@@ -372,7 +372,7 @@ def main() -> None:
             "computed_sequences": computed_sequences,
             "reused_sequences": reused_sequences,
             "model_dir": str(args.model_dir.resolve()),
-            "proenv_root": str(args.proenv_root.resolve()),
+            "adapter_root": str(args.adapter_root.resolve()),
             "cache_root": str(cache_root.resolve()),
             "partial_run": partial_run,
         },

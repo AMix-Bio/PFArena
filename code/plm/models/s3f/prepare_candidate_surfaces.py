@@ -18,12 +18,11 @@ import pandas as pd
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parents[1]
 CURVATURE_CHUNK_SIZE = 512
-LEGACY_PREPROCESSOR_SHA256 = "cc546fa1d13558143b23c86cdbf9e133e16664cc8f9b4e4a0ff98f9dfad7c5f8"
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from common_io import atomic_write_json, sha256_file, sha256_files
 from prepare_surfaces import install_chunked_curvature, load_s3f_module, validate_surface
-from run import MODEL
+from core import MODEL
 
 
 CONTEXT_COLUMNS = [
@@ -43,11 +42,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--shard-id", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--context-id")
-    parser.add_argument(
-        "--all-contexts",
-        action="store_true",
-        help="process every input context",
-    )
     return parser.parse_args()
 
 
@@ -130,10 +124,7 @@ def validate_existing(
     for field, value in expected.items():
         if metadata.get(field) != value:
             raise ValueError(f"{surface_path.parent}: cached surface {field} differs")
-    if metadata.get("preprocessor_sha256") not in {
-        LEGACY_PREPROCESSOR_SHA256,
-        sha256_file(Path(__file__)),
-    }:
+    if metadata.get("preprocessor_sha256") != sha256_file(Path(__file__)):
         raise ValueError(f"{surface_path.parent}: cached surface preprocessor differs")
     return summary
 
