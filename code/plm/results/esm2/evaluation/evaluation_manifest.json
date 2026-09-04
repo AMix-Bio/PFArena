@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-08-28T09:23:11.209709+00:00",
+  "run_dir": "results/esm2",
+  "evaluator": "evaluation/full.py",
+  "evaluator_sha256": "f558d9e59dbbb005bb85f704476ef2e3e3ff57c2c8af56cab74e409c0d9c3237",
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "NMS@40": 0.7854278748141867,
+      "Recall@40": 0.03699186991869918
+    },
+    "T2_random_multi_ranking": {
+      "NDCG": 0.8633811688534531,
+      "NMS@5": 0.7830873917043907,
+      "Recall@5": 0.1891891891891891,
+      "spearman": 0.25391897426042404
+    },
+    "T3_anchor_successor_ranking": {
+      "NDCG": 0.8839791061774258,
+      "NMS@5": 0.8098530256426046,
+      "Recall@5": 0.3044776119402985,
+      "spearman": 0.3127730998125147
+    },
+    "T4_single_context_combo_ranking": {
+      "NDCG": 0.8828086739230232,
+      "NMS@5": 0.8129410854457764,
+      "Recall@5": 0.22758620689655176,
+      "spearman": 0.3153028145800256
+    }
+  }
+}

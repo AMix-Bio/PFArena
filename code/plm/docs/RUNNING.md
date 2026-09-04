@@ -8,7 +8,7 @@ Set the following paths for the local installation:
 
 ```bash
 DATASET=/path/to/frozen_pfarena_dataset
-STRUCTURES=/path/to/structure_manifest.csv
+STRUCTURES=/path/to/PFArena_PLM_Structures/manifest.csv
 WORK=/path/to/new_work_directory
 N=1
 I=0
@@ -129,3 +129,12 @@ Finalization verifies shard configuration, numerical validity, sample identity,
 complete candidate coverage, and multi-chain aggregation. Evaluate the emitted
 `tasks/<task>/evaluator_predictions.csv` files with the evaluator distributed
 by the parent PFArena project.
+
+For released results, reconstruct the same evaluator-ready tables without
+retaining duplicate copies:
+
+```bash
+python export_evaluator_predictions.py \
+  --result-dir results/MODEL \
+  --output-dir /path/to/evaluator_inputs/MODEL
+```

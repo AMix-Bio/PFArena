@@ -91,6 +91,7 @@ def validate_structures(
     manifest: pd.DataFrame,
     dataset: dict,
     chain_sequences: dict[str, str],
+    required_contexts: set[str],
 ) -> pd.DataFrame:
     required = {
         "dataset_hash", "context_sha256", "sequence_length", "structure_status",
@@ -104,10 +105,10 @@ def validate_structures(
         raise ValueError("chain structure manifest targets a different dataset")
     if not manifest["structure_status"].eq("ready").all():
         raise ValueError("chain structure manifest contains unavailable structures")
-    if set(manifest["context_sha256"]) != set(chain_sequences):
-        raise ValueError("chain structure manifest context set differs from the dataset")
+    if set(manifest["context_sha256"]) != required_contexts:
+        raise ValueError("chain structure manifest context set differs from mutated chains")
     lengths = manifest.set_index("context_sha256")["sequence_length"].astype(int)
-    if any(lengths[context] != len(sequence) for context, sequence in chain_sequences.items()):
+    if any(lengths[context] != len(chain_sequences[context]) for context in required_contexts):
         raise ValueError("chain structure manifest sequence length differs")
     return manifest.set_index("context_sha256")
 
@@ -310,11 +311,14 @@ def main() -> None:
 
     dataset, proteins, samples, substitutions, _ = load_model_dataset(args.dataset_dir)
     components, chain_sequences = build_components(proteins, samples, substitutions)
+    all_contexts = set(components["context_sha256"])
     structure_frame = pd.read_csv(args.structure_manifest)
     structure_frame["pdb_path"] = structure_frame["pdb_path"].map(
         lambda value: str(resolve_structure_path(value, args.structure_manifest))
     )
-    structures = validate_structures(structure_frame, dataset, chain_sequences)
+    structures = validate_structures(
+        structure_frame, dataset, chain_sequences, all_contexts
+    )
     structure_manifest_sha256 = sha256_file(args.structure_manifest)
     model_validation = validate_model_dir(args.model_dir)
     prosst_validation = validate_prosst_repo(args.prosst_repo_dir)
@@ -330,7 +334,6 @@ def main() -> None:
         raise ValueError(f"expected FP32 model weights, found {model_dtype}")
     tokenizer_max_length = int(scorer.tokenizer.model_max_length)
     max_residues = tokenizer_max_length - 2
-    all_contexts = set(components["context_sha256"])
     if args.context_sha256:
         selected_contexts = sorted(set(args.context_sha256))
         unknown = set(selected_contexts) - all_contexts

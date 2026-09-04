@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-08-28T09:01:04.297315+00:00",
+  "dataset_id": "pfarena_t1_t4",
+  "dataset_hash": "183dc180cf74b3ea950aec6b51c5c55e8a25c444dc262625393b70ef750bb093",
+  "model_id": "progen2_base",
+  "primary_score": "progen2_delta",
+  "numeric_columns": [
+    "progen2_score",
+    "bidirectional_mean_nll",
+    "forward_mean_nll",
+    "reverse_mean_nll",
+    "forward_nll_sum",
+    "reverse_nll_sum",
+    "forward_chunk_mean_nll_sum",
+    "reverse_chunk_mean_nll_sum",
+    "forward_token_count",
+    "reverse_token_count",
+    "chunk_count",
+    "progen2_delta"
+  ],
+  "evaluation_samples": 607269,
+  "context_samples": 28676,
+  "chain_contribution_rows": 636111,
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "queries": 123,
+      "samples": 594695
+    },
+    "T2_random_multi_ranking": {
+      "queries": 74,
+      "samples": 6288
+    },
+    "T3_anchor_successor_ranking": {
+      "queries": 67,
+      "samples": 3648
+    },
+    "T4_single_context_combo_ranking": {
+      "queries": 29,
+      "samples": 2638
+    }
+  },
+  "run_config": {
+    "model_id": "progen2_base",
+    "checkpoint": "progen2-base",
+    "checkpoint_config_sha256": "d399fad9aaeb115e29cbfe3c9a917b6a6d749f6bd23aa26012beae70bd3b4b64",
+    "checkpoint_weights_sha256": "09f02b479cfee0d99edf6cb1127e740c411a8cfbdbd66fecdf86aec043712238",
+    "checkpoint_weights_size_bytes": 1533871811,
+    "checkpoint_weight_files": [
+      "pytorch_model.bin"
+    ],
+    "checkpoint_declared_dtype": "float16",
+    "checkpoint_architecture": {
+      "vocab_size": 32,
+      "n_positions": 2048,
+      "n_embd": 1536,
+      "n_layer": 27,
+      "n_head": 16,
+      "rotary_dim": 48
+    },
+    "tokenizer_sha256": "e56176ef2390f7a0ec29930aaa41983406085e026cb6f99f8a6e180b3b3a56bc",
+    "configuration_code_sha256": "a366655a755ebbb11861bcba58a7b3f719c0ec43d7c9a729a44869d17942bd7e",
+    "modeling_code_sha256": "34fc2e84dae2d8558c0acc3bcbb0bcc7a7420cce885de6ddb780e3e57ecb5e10",
+    "python": "3.12.1",
+    "torch": "2.8.0+cu128",
+    "torch_cuda": "12.8",
+    "transformers": "4.57.1",
+    "tokenizers": "0.22.2",
+    "device": "cuda",
+    "model_dtype": "torch.float32",
+    "gpu": "NVIDIA H200",
+    "float32_matmul_precision": "highest",
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "batch_size": 8,
+    "context_length": 2048,
+    "terminal_protocol": "prefix_1_suffix_2",
+    "chunk_protocol": "non_overlapping_no_empty_tail",
+    "scored_token_ids": [
+      5,
+      29
+    ],
+    "scoring_strategy": "bidirectional causal likelihood with ProteinGym terminal and chunk protocol",
+    "multichain_protocol": "sum_independent_mutated_chain_score_deltas",
+    "cache_format_version": 1,
+    "cache_namespace": "candidate_chain_bidirectional_v1",
+    "cache_config_sha256": "6f1836a617c6ec58d52cba7d8e2b86fd868c0f4cc62cb66e5e8f23366d22d9a0",
+    "output_schema_sha256": "6db94fd988e2d127e862d033b95c5b8d2f7f743f5ee5aad63c4488162ed10b03"
+  }
+}

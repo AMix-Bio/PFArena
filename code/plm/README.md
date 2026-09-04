@@ -28,8 +28,10 @@ log-odds within a chain. All baselines sum contributions across mutated chains.
 - `common_io.py`, `dataset_io.py`, and `model_dataset_io.py`: shared validated I/O.
 - `finalize_results.py`: shard aggregation, coverage validation, and generation
   of evaluator-ready prediction tables.
+- `export_evaluator_predictions.py`: reconstruction of evaluator-ready task
+  tables from the released final predictions.
 - `validate_results.py`: self-contained integrity check for released predictions,
-  task tables, evaluation summaries, and the leaderboard.
+  evaluation summaries, and the leaderboard.
 - `results/`: complete predictions and unified-evaluator outputs for all six
   reported baselines.
 - `docs/`: input contract, external dependencies, and result organization.
@@ -38,15 +40,15 @@ log-odds within a chain. All baselines sum contributions across mutated chains.
 
 The module intentionally excludes benchmark copies, ground truth, the shared
 evaluation package, scheduler-specific submission scripts, model checkpoints,
-rebuildable model caches, and predicted structures. Structure-aware models
-accept a separately supplied chain-structure manifest.
+predicted structures, and rebuildable model caches. The required WT chain PDBs
+are released separately as the accompanying PFArena PLM Structures dataset.
 
 ## Running a baseline
 
 The parent project supplies a canonical dataset directory matching
-`docs/DATA_FORMAT.md`. Structure-aware models additionally receive a chain
-structure manifest generated from AlphaFold 3 or another compatible source.
-MSA-aware models resolve the alignment paths recorded in `msa_contexts.csv`.
+`docs/DATA_FORMAT.md`. Structure-aware models use the manifest distributed with
+the accompanying structure dataset, and MSA-aware models resolve the alignment
+paths recorded in `msa_contexts.csv`.
 
 ESM-2, ProGen2-base, ProSST-2048, S3F, and VenusREM use model-specific
 `run_candidates.py` entry points with explicit data, output, cache, model
@@ -71,8 +73,9 @@ python finalize_results.py \
   --output-schema models/<model>/output_schema_candidates.json
 ```
 
-Evaluate the generated `tasks/<task>/evaluator_predictions.csv` files with the
-official evaluator distributed by the parent PFArena project. Required upstream
+Evaluator-ready task tables can be generated from released results with
+`export_evaluator_predictions.py`. Evaluate these tables with the official
+evaluator distributed by the parent PFArena project. Required upstream
 repositories and checkpoints are listed in `docs/DEPENDENCIES.md`; no model
 parameters are included here.
 

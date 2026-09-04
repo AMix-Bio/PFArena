@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-08-28T09:23:46.917961+00:00",
+  "run_dir": "results/s3f",
+  "evaluator": "evaluation/full.py",
+  "evaluator_sha256": "f558d9e59dbbb005bb85f704476ef2e3e3ff57c2c8af56cab74e409c0d9c3237",
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "NMS@40": 0.7804161551923524,
+      "Recall@40": 0.03638211382113822
+    },
+    "T2_random_multi_ranking": {
+      "NDCG": 0.8626295950304737,
+      "NMS@5": 0.7750632239841592,
+      "Recall@5": 0.17567567567567566,
+      "spearman": 0.27847032714593956
+    },
+    "T3_anchor_successor_ranking": {
+      "NDCG": 0.8841659508214627,
+      "NMS@5": 0.8522961177139661,
+      "Recall@5": 0.29552238805970127,
+      "spearman": 0.3357399317889938
+    },
+    "T4_single_context_combo_ranking": {
+      "NDCG": 0.88360765166217,
+      "NMS@5": 0.8410347049599258,
+      "Recall@5": 0.2758620689655173,
+      "spearman": 0.3487112810212152
+    }
+  }
+}

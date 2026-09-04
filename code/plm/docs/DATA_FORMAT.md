@@ -33,8 +33,9 @@ For structure-aware models, a separately supplied structure manifest must contai
 `dataset_hash`, `context_sha256`, `sequence_length`, `structure_status`,
 `structure_qc`, `structure_source`, `pdb_path`, and `pdb_sha256`. Relative structure paths are resolved first
 against the manifest directory and then against the project root. Relative MSA
-paths are resolved against the canonical dataset directory. Predicted
-structures are not distributed in this module.
+paths are resolved against the canonical dataset directory. The released
+manifest and required WT chain PDBs are distributed in the accompanying
+PFArena PLM Structures dataset.
 
 WT structures and MSAs are shared by candidates with the same chain context;
 mutant-specific structures or MSAs are not required. Output columns and

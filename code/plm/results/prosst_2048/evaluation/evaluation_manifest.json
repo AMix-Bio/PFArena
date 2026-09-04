@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-08-28T09:23:35.017925+00:00",
+  "run_dir": "results/prosst_2048",
+  "evaluator": "evaluation/full.py",
+  "evaluator_sha256": "f558d9e59dbbb005bb85f704476ef2e3e3ff57c2c8af56cab74e409c0d9c3237",
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "NMS@40": 0.784722337378574,
+      "Recall@40": 0.04065040650406508
+    },
+    "T2_random_multi_ranking": {
+      "NDCG": 0.8657130576387733,
+      "NMS@5": 0.7829321529168328,
+      "Recall@5": 0.2108108108108107,
+      "spearman": 0.27765948737497087
+    },
+    "T3_anchor_successor_ranking": {
+      "NDCG": 0.8902673325326659,
+      "NMS@5": 0.8619827370582208,
+      "Recall@5": 0.36716417910447763,
+      "spearman": 0.3835997530237149
+    },
+    "T4_single_context_combo_ranking": {
+      "NDCG": 0.8724893934269318,
+      "NMS@5": 0.8077756865446134,
+      "Recall@5": 0.2482758620689656,
+      "spearman": 0.3778617911930667
+    }
+  }
+}
