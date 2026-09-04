@@ -1,0 +1,2 @@
+setting,num_assays,num_queries,spearman,NDCG,NMS@5,Recall@5,missing_assays,unknown_assays,assays_below_budget,assays_with_incomplete_candidate_ranking,mean_illegal_predictions_within_budget,mean_duplicate_predictions_within_budget,total_invalid_ground_truth_score_rows,total_invalid_ground_truth_mutant_rows,total_duplicate_ground_truth_mutants_collapsed
+T3_anchor_successor_ranking,67,67,0.36982423198365133,0.8897352695578369,0.857818836903109,0.36119402985074633,0,0,0,0,0.0,0.0,0,0,0

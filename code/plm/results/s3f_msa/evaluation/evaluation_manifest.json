@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-08-28T09:23:58.732475+00:00",
+  "run_dir": "results/s3f_msa",
+  "evaluator": "evaluation/full.py",
+  "evaluator_sha256": "f558d9e59dbbb005bb85f704476ef2e3e3ff57c2c8af56cab74e409c0d9c3237",
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "NMS@40": 0.7815576829984212,
+      "Recall@40": 0.03638211382113819
+    },
+    "T2_random_multi_ranking": {
+      "NDCG": 0.870022469449425,
+      "NMS@5": 0.7964354413867609,
+      "Recall@5": 0.2027027027027026,
+      "spearman": 0.28033489138927614
+    },
+    "T3_anchor_successor_ranking": {
+      "NDCG": 0.8860092946470797,
+      "NMS@5": 0.838192691237749,
+      "Recall@5": 0.3223880597014925,
+      "spearman": 0.3159449454510549
+    },
+    "T4_single_context_combo_ranking": {
+      "NDCG": 0.9005379322768126,
+      "NMS@5": 0.8686048664888103,
+      "Recall@5": 0.2896551724137931,
+      "spearman": 0.36621867928824037
+    }
+  }
+}

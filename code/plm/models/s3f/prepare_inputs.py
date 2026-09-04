@@ -89,8 +89,8 @@ def main() -> None:
         raise ValueError("structure manifest targets a different dataset")
     if not structures["structure_status"].eq("ready").all():
         raise ValueError("structure manifest contains unavailable structures")
-    if set(structures["context_sha256"]) != set(chain_sequences):
-        raise ValueError("structure manifest context set differs from the dataset")
+    if set(structures["context_sha256"]) != required_contexts:
+        raise ValueError("structure manifest context set differs from mutated chains")
 
     sample_counts = components.groupby("context_sha256")["sample_id"].nunique()
     component_counts = components.groupby("context_sha256").size()
@@ -98,8 +98,7 @@ def main() -> None:
     structure_dir = args.output_dir / "structures"
     structure_dir.mkdir(parents=True)
     rows = []
-    selected = structures[structures["context_sha256"].isin(required_contexts)]
-    for structure in selected.sort_values("context_sha256").itertuples(index=False):
+    for structure in structures.sort_values("context_sha256").itertuples(index=False):
         sequence = chain_sequences[structure.context_sha256]
         if len(sequence) != int(structure.sequence_length):
             raise ValueError(f"{structure.context_sha256}: sequence length differs")

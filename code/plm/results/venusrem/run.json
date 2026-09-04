@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-08-28T09:04:52.965072+00:00",
+  "dataset_id": "pfarena_t1_t4",
+  "dataset_hash": "183dc180cf74b3ea950aec6b51c5c55e8a25c444dc262625393b70ef750bb093",
+  "model_id": "VenusREM_ProSST-2048_aa_seq_aln",
+  "primary_score": "venusrem_score",
+  "numeric_columns": [
+    "venusrem_score",
+    "mutant_value",
+    "wt_value"
+  ],
+  "evaluation_samples": 607269,
+  "context_samples": 28676,
+  "chain_contribution_rows": 636111,
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "queries": 123,
+      "samples": 594695
+    },
+    "T2_random_multi_ranking": {
+      "queries": 74,
+      "samples": 6288
+    },
+    "T3_anchor_successor_ranking": {
+      "queries": 67,
+      "samples": 3648
+    },
+    "T4_single_context_combo_ranking": {
+      "queries": 29,
+      "samples": 2638
+    }
+  },
+  "run_config": {
+    "model_id": "VenusREM_ProSST-2048_aa_seq_aln",
+    "checkpoint": "AI4Protein/ProSST-2048",
+    "checkpoint_revision": "e94ffee7846d7f55c1bf5efa8ec7372a336ac4b83",
+    "model_config_sha256": "29fad6db61fb0d3ae6bccdca7dd2cda9d32cec0c15601e289da2e057865c6a5b",
+    "model_weights_sha256": "aa6742cd2fd4c0ad3b908f19358136c66614f07093cdf9a995120723c6d54368",
+    "model_weights_size_bytes": 468620656,
+    "tokenizer_sha256": "81963c18c3257d9f8db78dea0b16a86c9a59ff6fbcc9171dbf8dfc5a420d61ef",
+    "custom_model_code_sha256": "b1ef044f9788f4286d37fe6f51cb2b1cf31a558b1cd06e15cae64ad5c656cbee",
+    "python": "3.9.20",
+    "torch": "2.5.1+cu121",
+    "torch_cuda": "12.1",
+    "transformers": "4.46.2",
+    "device": "cuda",
+    "gpu": "NVIDIA H200",
+    "model_dtype": "torch.float32",
+    "float32_matmul_precision": "highest",
+    "cuda_matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "tokenizer_model_max_length": 2048,
+    "structure_vocab_size": 2048,
+    "logit_mode": "aa_seq_aln",
+    "alpha": 0.8,
+    "sample_ratio": 1.0,
+    "sample_times": 1,
+    "scoring_strategy": "wildtype_marginal_sum_over_substitutions",
+    "multichain_protocol": "sum_independent_mutated_chain_log_odds",
+    "long_sequence_protocol": "required_interval_centered_synchronized_sequence_structure_msa_window",
+    "max_residues": 2046,
+    "input_contexts_sha256": "fb2de0f3b81c7ec90ff297551f022ed313dd6162e8691ade8584a630b22b55af",
+    "cache_format_version": 1,
+    "cache_namespace": "candidate_chain_venusrem_v1",
+    "cache_config_sha256": "4790361677ca734f56a87af0eb37e382b56fc05eb2aaced321397ed3784f19a9",
+    "inputs_sha256": "2807be989a3298a32ddc38cbba9647cc8a57de28a0c1ee1965eb10a7537dea39",
+    "prosst_run_config_sha256": "699b246da46330729b04a44e90523dd99c279aca12d51c181f0d42986336ad2c",
+    "output_schema_sha256": "394fa083626aaf307e0031597af96af21786aec0860d3ddcea4f174c7903c9f2"
+  }
+}

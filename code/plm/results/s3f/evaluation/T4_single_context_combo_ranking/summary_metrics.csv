@@ -1,0 +1,2 @@
+setting,num_assays,num_queries,spearman,NDCG,NMS@5,Recall@5,missing_assays,unknown_assays,assays_below_budget,assays_with_incomplete_candidate_ranking,mean_illegal_predictions_within_budget,mean_duplicate_predictions_within_budget,total_invalid_ground_truth_score_rows,total_invalid_ground_truth_mutant_rows,total_duplicate_ground_truth_mutants_collapsed
+T4_single_context_combo_ranking,29,29,0.3487112810212152,0.88360765166217,0.8410347049599258,0.2758620689655173,0,0,0,0,0.0,0.0,0,0,0

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-08-28T09:02:48.803771+00:00",
+  "dataset_id": "pfarena_t1_t4",
+  "dataset_hash": "183dc180cf74b3ea950aec6b51c5c55e8a25c444dc262625393b70ef750bb093",
+  "model_id": "S3F",
+  "primary_score": "s3f_score",
+  "numeric_columns": [
+    "s3f_score"
+  ],
+  "evaluation_samples": 607269,
+  "context_samples": 28676,
+  "chain_contribution_rows": 636111,
+  "tasks": {
+    "T1_single_mutation_generation": {
+      "queries": 123,
+      "samples": 594695
+    },
+    "T2_random_multi_ranking": {
+      "queries": 74,
+      "samples": 6288
+    },
+    "T3_anchor_successor_ranking": {
+      "queries": 67,
+      "samples": 3648
+    },
+    "T4_single_context_combo_ranking": {
+      "queries": 29,
+      "samples": 2638
+    }
+  },
+  "run_config": {
+    "model_id": "S3F",
+    "method": "s3f",
+    "checkpoint_sha256": "121dd6cb4c627d85ac9e99ec79f0d1d778576c475c15692dcbbdca731da56876",
+    "s3f_script_sha256": "7aa38e6f7a3365329cd9d9e53ce5769d55a2799d08cac8e4e0fe8ad2546c1c52",
+    "s3f_code_sha256": "e205bdaf5beffcee99f732b56c0bba11c0641585604d33508519e30ad07f500d",
+    "esm_model_sha256": "9cc0e873f2eecee846dd5a1ae93d0cd0c3e7d24f22590318ae2d4d6431765e68",
+    "input_hash": "073379a1a51b20f96f97dc0ced8bb459b35e79cf43999409f7690ef239dfebbe",
+    "python": "3.10.20",
+    "torch": "2.1.2",
+    "torch_cuda": "12.1",
+    "gpu": "NVIDIA H200",
+    "device": "cuda",
+    "structure_start": 1,
+    "plddt_threshold": 70.0,
+    "esm_max_input_length": 1022,
+    "position_batch_size": 2,
+    "position_batch_policy": "min(requested, floor(1022^2 / min(sequence_length, 1022)^2))",
+    "seed_policy": "global seed 0; per-chain seed from context_sha256",
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "scoring_strategy": "S3F masked-marginal sum over substitution components",
+    "multichain_protocol": "sum independent mutated-chain component scores",
+    "long_sequence_protocol": "official mutation-centered 1022-residue window",
+    "amino_acids": "ACDEFGHIKLMNPQRSTVWY",
+    "cache_format_version": 2,
+    "cache_namespace": "candidate_chain_s3f_v1",
+    "cache_config_sha256": "2f28a6f6aaf76786f48d86ad585177e7aeb2f6a43375a78ad8f696cf3cd1da0f",
+    "output_schema_sha256": "15d80beb94405784be8884af23feafaf7e22e187f136603eb136d85edbd9668b"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "identity_columns": ["sample_id", "subset", "candidate_group_id", "source_assay", "mutant", "status"],
+  "primary_score": "s3f_msa_score",
+  "status_values": {"ok": "S3F and EVE scores are complete"},
+  "sample_outputs": {
+    "s3f_score": {"dtype": "float64", "description": "S3F component score", "higher_is_better": true},
+    "eve_single": {"dtype": "float64", "description": "single-seed EVE score", "higher_is_better": true},
+    "eve_ensemble": {"dtype": "float64", "description": "five-seed EVE ensemble score", "higher_is_better": true},
+    "eve_source_code": {"dtype": "int64", "description": "EVE provenance: 0=new five-seed model, 1=validated five-seed model trained from the matching released MSA and configuration"},
+    "s3f_z": {"dtype": "float64", "description": "within-query S3F z-score", "higher_is_better": true},
+    "eve_z": {"dtype": "float64", "description": "within-query EVE z-score", "higher_is_better": true},
+    "s3f_msa_score": {"dtype": "float64", "description": "mean of S3F and EVE z-scores", "higher_is_better": true}
+  }
+}

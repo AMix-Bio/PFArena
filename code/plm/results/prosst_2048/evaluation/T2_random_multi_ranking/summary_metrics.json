@@ -1,0 +1,31 @@
+{
+  "ground_truth_dir": "data/ground_truth/T2_random_multi_ranking/norm_data",
+  "metrics": {
+    "NDCG": 0.8657130576387733,
+    "NMS@5": 0.7829321529168328,
+    "Recall@5": 0.2108108108108107,
+    "spearman": 0.27765948737497087
+  },
+  "num_assays": 74,
+  "num_queries": 74,
+  "predictions_path": "results/prosst_2048/tasks/T2_random_multi_ranking/evaluator_predictions.csv",
+  "problem_assays": {
+    "assays_below_budget": {},
+    "assays_with_incomplete_candidate_ranking": {},
+    "missing_assays": [],
+    "unknown_assays": []
+  },
+  "quality": {
+    "assays_below_budget": 0,
+    "assays_with_incomplete_candidate_ranking": 0,
+    "mean_duplicate_predictions_within_budget": 0.0,
+    "mean_illegal_predictions_within_budget": 0.0,
+    "missing_assays": 0,
+    "total_duplicate_ground_truth_mutants_collapsed": 0,
+    "total_invalid_ground_truth_mutant_rows": 0,
+    "total_invalid_ground_truth_score_rows": 0,
+    "unknown_assays": 0
+  },
+  "setting": "T2_random_multi_ranking",
+  "strict": true
+}
