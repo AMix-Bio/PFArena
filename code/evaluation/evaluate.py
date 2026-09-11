@@ -10,7 +10,7 @@ from evaluation.full import evaluate_full_setting, SUPPORTED_SETTINGS, write_out
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run benchmark evaluation.")
-    parser.add_argument("--setting", choices=SUPPORTED_SETTINGS, default="T1_single_mutation_generation")
+    parser.add_argument("--setting", choices=SUPPORTED_SETTINGS, default="T1_single_mutant_generation")
     parser.add_argument("--predictions", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--ground-truth-dir", default=None, type=Path)
