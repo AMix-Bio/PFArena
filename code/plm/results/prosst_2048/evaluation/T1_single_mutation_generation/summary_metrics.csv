@@ -1,2 +1,0 @@
-setting,num_assays,num_queries,NMS@40,Recall@40,missing_assays,unknown_assays,assays_below_budget,assays_with_incomplete_candidate_ranking,mean_illegal_predictions_within_budget,mean_duplicate_predictions_within_budget,total_invalid_ground_truth_score_rows,total_invalid_ground_truth_mutant_rows,total_duplicate_ground_truth_mutants_collapsed
-T1_single_mutation_generation,123,123,0.784722337378574,0.04065040650406508,0,0,0,0,0.0,0.0,0,0,0

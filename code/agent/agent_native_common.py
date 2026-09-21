@@ -753,7 +753,7 @@ def load_anchor_informed_groups(
         assay_dir = data_dir / "norm_data" / record.assay_id
         if not assay_dir.exists():
             continue
-        for group_path in sorted(assay_dir.glob("anchor_successor_*.csv")):
+        for group_path in sorted(assay_dir.glob("anchor_*.csv")):
             groups.append(load_one_anchor_informed_group(group_path, record.assay_id))
     selected_groups = groups[
         start_group_index : None if max_groups is None else start_group_index + max_groups
@@ -823,7 +823,7 @@ def load_mutation_informed_groups(
         assay_dir = data_dir / "norm_data" / record.assay_id
         if not assay_dir.exists():
             continue
-        for group_path in sorted(assay_dir.glob("single_context_combo_*.csv")):
+        for group_path in sorted(assay_dir.glob("single_context_combo*.csv")):
             groups.append(load_one_mutation_informed_group(group_path, record.assay_id, data_dir))
     selected_groups = groups[
         start_group_index : None if max_groups is None else start_group_index + max_groups

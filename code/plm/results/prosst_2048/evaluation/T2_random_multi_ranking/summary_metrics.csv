@@ -1,2 +1,0 @@
-setting,num_assays,num_queries,spearman,NDCG,NMS@5,Recall@5,missing_assays,unknown_assays,assays_below_budget,assays_with_incomplete_candidate_ranking,mean_illegal_predictions_within_budget,mean_duplicate_predictions_within_budget,total_invalid_ground_truth_score_rows,total_invalid_ground_truth_mutant_rows,total_duplicate_ground_truth_mutants_collapsed
-T2_random_multi_ranking,74,74,0.27765948737497087,0.8657130576387733,0.7829321529168328,0.2108108108108107,0,0,0,0,0.0,0.0,0,0,0

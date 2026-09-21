@@ -145,17 +145,19 @@ def resolve_ground_truth_dir(path: Path) -> Path:
 def ground_truth_csv_paths(ground_truth_dir: Path, *, nested_groups: bool, setting: str) -> list[Path]:
     setting = normalize_setting(setting)
     if setting == TASK_NAMES["3"]:
-        return sorted(ground_truth_dir.glob("*/anchor_successor_*.csv"))
+        return sorted(ground_truth_dir.glob("*/anchor_*.csv"))
     if setting == TASK_NAMES["4"]:
-        return sorted(ground_truth_dir.glob("*/single_context_combo_*.csv"))
+        return sorted(ground_truth_dir.glob("*/single_context_combo*.csv"))
     if nested_groups:
         return sorted(ground_truth_dir.glob("*/*.csv"))
     return sorted(ground_truth_dir.glob("*.csv"))
 
 
 def fallback_assay_id(path: Path, *, nested_groups: bool, setting: str) -> str:
-    if setting == TASK_NAMES["2"] and path.stem.endswith("_random_multi"):
-        return path.stem[: -len("_random_multi")]
+    if setting == TASK_NAMES["3"]:
+        return f"{path.parent.name}_T3"
+    if setting == TASK_NAMES["4"]:
+        return f"{path.parent.name}_T4"
     if nested_groups:
         return f"{path.parent.name}|{path.stem}"
     return path.stem
@@ -269,6 +271,7 @@ def load_predictions(
     item_column_aliases: tuple[str, ...] = ("mutant", "annots", "mutation"),
     rank_column: str = "rank",
     score_column: str = "score",
+    setting: str = "full",
 ) -> dict[str, list[PredictionRow]]:
     if predictions_path.is_dir():
         return _load_prediction_dir(
@@ -278,6 +281,7 @@ def load_predictions(
             item_column_aliases=item_column_aliases,
             rank_column=rank_column,
             score_column=score_column,
+            setting=setting,
         )
     return _load_prediction_file(
         predictions_path,
@@ -290,6 +294,16 @@ def load_predictions(
     )
 
 
+def _derive_nested_default_assay(path: Path, setting: str) -> str:
+    if "__" in path.stem:
+        return path.stem.replace("__", "|")
+    if setting == TASK_NAMES["3"]:
+        return f"{path.parent.name}_T3"
+    if setting == TASK_NAMES["4"]:
+        return f"{path.parent.name}_T4"
+    return f"{path.parent.name}|{path.stem}"
+
+
 def _load_prediction_dir(
     predictions_dir: Path,
     *,
@@ -298,6 +312,7 @@ def _load_prediction_dir(
     item_column_aliases: tuple[str, ...],
     rank_column: str,
     score_column: str,
+    setting: str,
 ) -> dict[str, list[PredictionRow]]:
     if not predictions_dir.exists():
         raise FileNotFoundError(f"Prediction directory does not exist: {predictions_dir}")
@@ -307,10 +322,7 @@ def _load_prediction_dir(
         raise ValueError(f"No prediction CSV files found in {predictions_dir}")
     for path in csv_paths:
         is_nested = path.parent != predictions_dir
-        if is_nested and "__" in path.stem:
-            default_assay = path.stem.replace("__", "|")
-        else:
-            default_assay = f"{path.parent.name}|{path.stem}" if is_nested else path.stem
+        default_assay = _derive_nested_default_assay(path, setting) if is_nested else path.stem
         loaded = _load_prediction_file(
             path,
             default_assay=default_assay,
@@ -444,6 +456,7 @@ def evaluate_full_setting(
         item_column_aliases=setting_prediction_item_columns(setting),
         rank_column=rank_column,
         score_column=score_column,
+        setting=setting,
     )
     _validate_predictions(truth, predictions, top_k=top_k, strict=strict, setting=setting)
 
