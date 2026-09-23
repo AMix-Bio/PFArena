@@ -1,10 +1,10 @@
 # PFArena
 
-PFArena is a protein-mutation benchmark with four evaluation tasks and three
-inference backends: API-based LLMs, Biomni agents, and protein language models
-(PLMs). The runnable code is under [`code/`](code/).
+**PFArena** is an assay-grounded **protein-mutation benchmark** that systematically evaluates protein language models (PLMs), large language models (LLMs), and LLM-based agents under four protein modification settings. Comprising 202 unique assays, 293 assay--task instances, and 607,269 target candidate rows, PFArena defines four task interfaces that correspond to common decisions in protein-engineering workflows.
 
-## 1. Create the shared Python environment
+Runnable inference and evaluation code is under [`code/`](code/). Below is a detailed setup tutorial. 
+
+## 1. Create Conda environment
 
 Create one Python 3.12 environment for the API LLM, Agent, and evaluator code.
 The pinned dependencies are in [`code/requirements.txt`](code/requirements.txt).
@@ -32,7 +32,7 @@ downloaded to `PFArena/PFArena` relative to this repository:
 ```bash
 export PF_DATA="$PF_REPO/PFArena"
 
-# Install the Hugging Face CLI once if it is not already available.
+# Install the Hugging Face CLI if it is not already available.
 python -m pip install --upgrade huggingface_hub
 # Run `hf auth login` first if the dataset requires authentication.
 hf download AMix-Bio/PFArena \
@@ -49,16 +49,18 @@ for the commands below. The four task directories are:
 
 | Task | Directory | Task purpose |
 | --- | --- | --- |
-| T1 | `T1_single_mutant_generation` | Generate the top 40 single-mutant substitutions |
-| T2 | `T2_measurement_free_multi_mutant_ranking` | Rank multi-mutant candidates without measurements provided |
-| T3 | `T3_anchor_informed_multi_mutant_ranking` | Rank multi-mutant candidates given one measured anchor mutant |
-| T4 | `T4_single_mutant_informed_multi_mutant_ranking` | Rank multi-mutant candidates given all relevant single-mutant measurements |
+| T1 | `T1_single_mutant_generation` | Propose promising mutations without target-specific mutation measurements |
+| T2 | `T2_measurement_free_multi_mutant_ranking` | Prioritize a supplied pool of multi-mutant candidates |
+| T3 | `T3_anchor_informed_multi_mutant_ranking` | Rank successors of an experimentally measured mutant |
+| T4 | `T4_single_mutant_informed_multi_mutant_ranking` | Prioritize combinations using measured effects of their component mutations |
 
 The `norm_data` tables contain the candidate mutations; `DMS_score` is the
 ground-truth label used by evaluation. Keep the downloaded benchmark data
 unchanged and DO NOT expose ground-truth columns to an inference backend.
 
 ## 3. Inference
+
+Now you are ready for **PFArena** benchmark evaluation. Code for the evaluated models in our paper is provided in this repository, and inference demos of the three model families are presented below, bonded with a shared evaluator. Feel free to skip to your section of interest.
 
 ### LLM inference
 
@@ -313,5 +315,4 @@ Evaluation writes `summary_metrics.json`, `summary_metrics.csv`, and
 ## 5. Citation
 
 If you use PFArena in your work, please cite our paper. The arXiv version
-will be uploaded soon; in the meantime, the paper is available at
-https://github.com/AMix-Bio/PFArena/blob/main/PFArena.pdf
+will be uploaded soon; in the meantime, the paper is available at [`PFArena.pdf`](PFArena.pdf)
