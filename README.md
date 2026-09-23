@@ -309,3 +309,9 @@ Evaluation writes `summary_metrics.json`, `summary_metrics.csv`, and
 `per_assay_metrics.csv` under the selected output directory. T1 reports
 `NMS@40` and `Recall@40`; T2--T4 report global ranking agreement
 (`spearman`, `NDCG`) and top-five quality/recovery (`NMS@5`, `Recall@5`).
+
+## 5. Citation
+
+If you use PFArena in your work, please cite our paper. The arXiv version
+will be uploaded soon; in the meantime, the paper is available at
+https://github.com/AMix-Bio/PFArena/blob/main/PFArena.pdf
