@@ -26,8 +26,7 @@ Conda specification, described in the [PLM inference](#plm-inference) section.
 
 Download the `PFArena` dataset from
 [`AMix-Bio/PFArena`](https://huggingface.co/datasets/AMix-Bio/PFArena) before
-running inference or evaluation. The examples below assume that the dataset is
-downloaded to `PFArena/PFArena` relative to this repository:
+running inference or evaluation:
 
 ```bash
 export PF_DATA="$PF_REPO/PFArena"
@@ -44,8 +43,44 @@ test -f "$PF_DATA/T1_single_mutant_generation/assay.csv"
 test -d "$PF_DATA/T1_single_mutant_generation/norm_data"
 ```
 
+The examples below assume that the dataset is
+downloaded to `PFArena/PFArena` relative to this repository, structured as below:
+
+```text
+PFArena/
+├── README.md
+├── code/                       # inference and evaluation code
+└── PFArena/                    # downloaded benchmark data ($PF_DATA)
+    ├── assay.csv
+    ├── assay_columns.md
+    ├── norm_data_columns.md
+    ├── T1_single_mutant_generation/
+    │   ├── assay.csv
+    │   └── norm_data/
+    │       └── <assay_id>.csv
+    ├── T2_measurement_free_multi_mutant_ranking/
+    │   ├── assay.csv
+    │   └── norm_data/
+    │       └── <assay_id>_random_multi.csv
+    ├── T3_anchor_informed_multi_mutant_ranking/
+    │   ├── assay.csv
+    │   └── norm_data/
+    │       └── <assay_id>/
+    │           └── anchor_successor.csv
+    ├── T4_single_mutant_informed_multi_mutant_ranking/
+    │   ├── assay.csv
+    │   └── norm_data/
+    │       └── <assay_id>/
+    │           ├── single_context_combo.csv
+    │           └── single_mutant_context.csv
+    └── msa_mmseqs_uniref100/
+        └── a3m_by_assay_id_relaxed_all_e01/
+            └── <source_dataset>/
+                └── <assay_id>.a3m
+```
+
 If the downloaded files are placed elsewhere, set `PF_DATA` to that directory
-for the commands below. The four task directories are:
+before inference. The four task directories are:
 
 | Task | Directory | Task purpose |
 | --- | --- | --- |
