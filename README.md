@@ -1,5 +1,7 @@
 # PFArena
 
+![PFArena overview](PFArena_fig.png)
+
 **PFArena** is an assay-grounded **protein-mutation benchmark** that systematically evaluates protein language models (PLMs), large language models (LLMs), and LLM-based agents under four protein modification settings. Comprising 202 unique assays, 293 assay--task instances, and 607,269 target candidate rows, PFArena defines four task interfaces that correspond to common decisions in protein-engineering workflows.
 
 Runnable inference and evaluation code is under [`code/`](code/). Below is a detailed setup tutorial. 
