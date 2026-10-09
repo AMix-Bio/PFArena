@@ -351,5 +351,13 @@ Evaluation writes `summary_metrics.json`, `summary_metrics.csv`, and
 
 ## 5. Citation
 
-If you use PFArena in your work, please cite our paper. The arXiv version
-will be uploaded soon; in the meantime, the paper is available at [`PFArena.pdf`](PFArena.pdf)
+If you find PFArena useful, please kindly cite our paper:
+
+```text
+@article{ouyang2026pfarena,
+  title={PFArena: Benchmarking Language Models for Protein Modification},
+  author={Ouyang, Yawen and Zhang, Xinbo and Ma, Ziyuan and Wu, Yixin and Liao, Wenbin and Zhang, Feiran and Li, Wenjie and Wang, Lihao and Wang, Hao and Zheng, Xiaoqing and others},
+  journal={arXiv preprint arXiv:2609.28921},
+  year={2026}
+}
+```
