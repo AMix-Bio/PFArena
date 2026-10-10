@@ -349,6 +349,47 @@ Evaluation writes `summary_metrics.json`, `summary_metrics.csv`, and
 `NMS@40` and `Recall@40`; T2--T4 report global ranking agreement
 (`spearman`, `NDCG`) and top-five quality/recovery (`NMS@5`, `Recall@5`).
 
+### Average NMS score evaluation
+
+We summarize overall model performance using the **unweighted average NMS**
+across T1--T4: `NMS@40` for T1 and `NMS@5` for T2--T4. Each task contributes
+equally, regardless of its number of assays:
+
+```text
+Average NMS = (NMS@40_T1 + NMS@5_T2 + NMS@5_T3 + NMS@5_T4) / 4
+```
+
+These metrics summarize the ground-truth quality of the candidates selected
+within each task's evaluation budget. Run the evaluator for all four tasks
+first, then pass the directory containing their task folders to
+[`code/evaluation/average_nms.sh`](code/evaluation/average_nms.sh):
+
+```bash
+export PF_RESULTS=/path/to/model_results
+bash "$PF_REPO/code/evaluation/average_nms.sh" "$PF_RESULTS"
+```
+
+The script reads `metrics` from each task's `evaluation/summary_metrics.json`
+and requires exactly four matching summaries. The expected layout is:
+
+```text
+<PF_RESULTS>/
+├── T1_single_mutant_generation/evaluation/summary_metrics.json
+├── T2_measurement_free_multi_mutant_ranking/evaluation/summary_metrics.json
+├── T3_anchor_informed_multi_mutant_ranking/evaluation/summary_metrics.json
+└── T4_single_mutant_informed_multi_mutant_ranking/evaluation/summary_metrics.json
+```
+
+For example, GPT-6-Astra produces:
+
+```text
+T1_single_mutant_generation: 0.796556
+T2_measurement_free_multi_mutant_ranking: 0.796711
+T3_anchor_informed_multi_mutant_ranking: 0.825769
+T4_single_mutant_informed_multi_mutant_ranking: 0.893460
+Average NMS: 0.8281
+```
+
 ## 5. Citation
 
 If you find PFArena useful, please kindly cite our paper:
