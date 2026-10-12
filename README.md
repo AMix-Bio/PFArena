@@ -116,28 +116,13 @@ cd "$PF_REPO"
 bash code/llm/run_infer_api_mutation.sh
 ```
 
-For a smoke test or an explicit dataset location, call the Python entry point
-directly. T1 takes the task-level `assay.csv`; T2--T4 take the task-level
-`norm_data` directory.
+Or change `task_id` from 1 to 4 and run each task separately as follows:
 
 ```bash
-# T1 smoke test: infer one assay with one concurrent request.
+# T1, change task-id from 2-4 for the other tasks
 python code/llm/infer_api_mutation.py \
-  --model gpt-5.6-sol \
+  --model gpt-6-astra \
   --task-id 1 \
-  --input-dir "$PF_DATA/T1_single_mutant_generation/assay.csv" \
-  --output-root "$PF_REPO/code/llm/results" \
-  --max-files 1 \
-  --num-workers 1 \
-  --retry-runs 3
-
-# Example full T2 run. Use --task-id 3 or 4 and the corresponding norm_data
-# directory for T3 or T4.
-python code/llm/infer_api_mutation.py \
-  --model gpt-5.6-sol \
-  --task-id 2 \
-  --input-dir "$PF_DATA/T2_measurement_free_multi_mutant_ranking/norm_data" \
-  --output-root "$PF_REPO/code/llm/results" \
   --num-workers 32 \
   --retry-runs 10
 ```
@@ -293,15 +278,31 @@ The shared evaluator is wrapped by
 [`code/evaluation/run_evaluate.sh`](code/evaluation/run_evaluate.sh). It uses
 the downloaded `PFArena/PFArena` directory as ground truth by default. Set
 `GROUND_TRUTH_DIR` when the benchmark is elsewhere. The wrapper currently
-passes `--lenient`, which scores the available assays when coverage is
-incomplete; remove that flag in the wrapper or call `evaluation.evaluate`
-directly for strict coverage checking.
+passes `--lenient`, which replaces unavailable assays with a random result
+when coverage is incomplete; remove that flag in the wrapper or call
+`evaluation.evaluate` directly for strict coverage checking.
 
 ### Evaluate LLM predictions
 
+When `SETTING` is empty, all four tasks are evaluated.
+Run the following command for default paths:
+
 ```bash
 cd "$PF_REPO"
-MODEL=gpt-5.6-sol \
+MODEL="gpt-6-astra" \
+bash code/evaluation/run_evaluate.sh
+```
+
+Set `SETTING` to the corresponding full task directory name to evaluate a
+single task, which are
+`T1_single_mutant_generation`,
+`T2_measurement_free_multi_mutant_ranking`,
+`T3_anchor_informed_multi_mutant_ranking`, and
+`T4_single_mutant_informed_multi_mutant_ranking`
+
+```bash
+cd "$PF_REPO"
+MODEL=gpt-6-astra \
 SETTING=T1_single_mutant_generation \
 RESULTS_SOURCE=llm \
 RESULTS_ROOT="$PF_REPO/code/llm/results" \
@@ -309,8 +310,7 @@ GROUND_TRUTH_DIR="$PF_DATA" \
 bash code/evaluation/run_evaluate.sh
 ```
 
-For T2, T3, or T4, change `SETTING` to the corresponding full task directory
-name. The evaluator expects the LLM files at
+The evaluator expects the LLM files at
 `<RESULTS_ROOT>/<MODEL>/<SETTING>/norm_data/`.
 
 ### Evaluate Agent predictions

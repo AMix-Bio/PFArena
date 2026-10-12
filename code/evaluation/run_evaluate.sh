@@ -8,8 +8,8 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 
 # ==============================
 # Edit these values, or override them through environment variables.
-MODEL="${MODEL:-gpt-5.6-sol}"                           # For LLM or PLM source
-SETTING="${SETTING:-T1_single_mutant_generation}"       # Tasks: ("T1_single_mutant_generation", "T2_measurement_free_multi_mutant_ranking", "T3_anchor_informed_multi_mutant_ranking", "T4_single_mutant_informed_multi_mutant_ranking")
+MODEL="${MODEL:-gpt-6-astra}"                           # For LLM or PLM source
+SETTING="${SETTING:-}"                                  # Empty: all four tasks; Single task: set to one of ("T1_single_mutant_generation", "T2_measurement_free_multi_mutant_ranking", "T3_anchor_informed_multi_mutant_ranking", "T4_single_mutant_informed_multi_mutant_ranking")
 RESULTS_SOURCE="${RESULTS_SOURCE:-llm}"                 # Source: ("llm", "plm", "agent")
 # ==============================
 
@@ -24,6 +24,19 @@ case "${RESULTS_SOURCE}" in
         exit 2
         ;;
 esac
+
+if [[ -z "${SETTING}" ]]; then
+    settings=(
+        "T1_single_mutant_generation"
+        "T2_measurement_free_multi_mutant_ranking"
+        "T3_anchor_informed_multi_mutant_ranking"
+        "T4_single_mutant_informed_multi_mutant_ranking"
+    )
+    for setting in "${settings[@]}"; do
+        SETTING="${setting}" bash "${SCRIPT_DIR}/run_evaluate.sh"
+    done
+    exit 0
+fi
 
 case "${RESULTS_SOURCE}" in
     llm)

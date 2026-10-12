@@ -39,11 +39,12 @@ def main(argv: list[str] | None = None) -> int:
     metrics = result.summary["metrics"]
     metric_text = " ".join(f"{name}={value:.6f}" for name, value in metrics.items())
     print(
-        f"{args.setting} "
+        f"-- {args.setting} "
         f"num_assays={result.summary['num_assays']} "
         f"num_queries={result.summary['num_queries']} "
-        f"{metric_text}"
+        f"missing_assays={result.summary['quality']['missing_assays']}"
     )
+    print(f"   {metric_text}")
     print(f"wrote {args.output_dir}")
     return 0
 

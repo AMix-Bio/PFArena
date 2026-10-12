@@ -331,7 +331,11 @@ def _load_prediction_dir(
             item_column_aliases=item_column_aliases,
             rank_column=rank_column,
             score_column=score_column,
-            force_default_assay=is_nested,
+            force_default_assay=is_nested or (
+                setting == TASK_NAMES["2"]
+                and path.stem.endswith("_random_multi")
+                and assay_column is None
+            ),
         )
         for assay, rows in loaded.items():
             per_assay[assay].extend(rows)
