@@ -108,15 +108,17 @@ export API_BASE_URL="https://your-openai-compatible-endpoint/v1"
 export API_KEY="<your-api-key>"
 ```
 
-The supplied wrapper is [`code/llm/run_infer_api_mutation.sh`](code/llm/run_infer_api_mutation.sh).
-Edit its `model` and `task_id` variables, then run it from the repository root:
+**All Tasks:** The supplied wrapper is [`code/llm/run_infer_api_mutation.sh`](code/llm/run_infer_api_mutation.sh).
+For concurrent inference of all 4 tasks (note that this may be API cost-heavy),
+edit its `model` variable, then run it from the repository root. The `task_ids`
+are already set to run all tasks.
 
 ```bash
 cd "$PF_REPO"
 bash code/llm/run_infer_api_mutation.sh
 ```
 
-Or change `task_id` from 1 to 4 and run each task separately as follows:
+**Single Task**: Or run each task separately, by changing `task_id` from 1 to 4 in the python script as follows:
 
 ```bash
 # T1, change task-id from 2-4 for the other tasks
@@ -127,8 +129,8 @@ python code/llm/infer_api_mutation.py \
   --retry-runs 10
 ```
 
-Outputs are written as one CSV per assay under
-`code/llm/results/<model>/T*_*/norm_data/`. Existing non-empty output files are
+**Inference Results**: Outputs are written as one CSV per assay under
+`code/llm/results/<model>/<task_name>/norm_data/`. Existing non-empty output files are
 skipped; add `--force` to recompute them. Use `--max-files` for a smoke test,
 and lower `--num-workers` when the endpoint has a strict rate limit.
 
