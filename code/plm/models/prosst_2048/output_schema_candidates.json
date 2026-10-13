@@ -1,0 +1,46 @@
+{
+  "identity_columns": [
+    "sample_id",
+    "subset",
+    "candidate_group_id",
+    "source_assay",
+    "mutant",
+    "status"
+  ],
+  "primary_score": "prosst_score",
+  "status_values": {
+    "ok": "all substitution components have complete ProSST-2048 outputs"
+  },
+  "sample_outputs": {
+    "prosst_score": {
+      "dtype": "float64",
+      "description": "sum of mutant_logp - wt_logp over all substitution components",
+      "higher_is_better": true
+    },
+    "mutant_logp": {
+      "dtype": "float64",
+      "description": "sum of WT-context mutant-residue log probabilities"
+    },
+    "wt_logp": {
+      "dtype": "float64",
+      "description": "sum of WT-context wild-type-residue log probabilities"
+    }
+  },
+  "cache": {
+    "format": "npz",
+    "granularity": "wild-type chain and deterministic inference window",
+    "normalization": "log_softmax over the complete 25-token vocabulary",
+    "contents": [
+      "cache_format_version",
+      "cache_config_sha256",
+      "context_sha256",
+      "pdb_sha256",
+      "sequence_length",
+      "positions",
+      "structure_tokens",
+      "tokens",
+      "token_ids",
+      "log_probs"
+    ]
+  }
+}

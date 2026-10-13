@@ -1,5 +1,10 @@
 # Released results
 
+Historical prediction archives are not bundled in this checkout. The layout
+below describes those archives when available separately; it is not an
+additional input requirement for rerunning the models. Generate new predictions
+with `RUNNING.md` and evaluate them using the parent project's evaluator.
+
 Each model directory under `results/` contains:
 
 - `predictions.csv.gz`: all 607,269 evaluation candidates and every retained model output.

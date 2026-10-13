@@ -1,0 +1,46 @@
+{
+  "identity_columns": [
+    "sample_id",
+    "subset",
+    "candidate_group_id",
+    "source_assay",
+    "mutant",
+    "status"
+  ],
+  "primary_score": "venusrem_score",
+  "status_values": {
+    "ok": "all substitution components have complete VenusREM outputs"
+  },
+  "sample_outputs": {
+    "venusrem_score": {
+      "dtype": "float64",
+      "description": "sum of mutant_value - wt_value over all substitution components",
+      "higher_is_better": true
+    },
+    "mutant_value": {
+      "dtype": "float64",
+      "description": "sum of WT-context retrieval-enhanced mutant-residue values"
+    },
+    "wt_value": {
+      "dtype": "float64",
+      "description": "sum of WT-context retrieval-enhanced wild-type-residue values"
+    }
+  },
+  "cache": {
+    "format": "npz",
+    "granularity": "wild-type natural chain and deterministic inference window",
+    "contents": [
+      "cache_format_version",
+      "cache_config_sha256",
+      "context_sha256",
+      "chain_sha256",
+      "chain_length",
+      "window_start",
+      "window_end",
+      "positions",
+      "tokens",
+      "token_ids",
+      "values"
+    ]
+  }
+}

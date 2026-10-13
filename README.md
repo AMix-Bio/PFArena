@@ -217,12 +217,25 @@ environments. Model weights and upstream repositories are not bundled; obtain
 them from the official sources listed in
 [`code/plm/docs/DEPENDENCIES.md`](code/plm/docs/DEPENDENCIES.md).
 
-The PLM runners consume the frozen, canonical model-input release: a directory
-containing `dataset.json`, `proteins.csv`, `samples.csv`, `substitutions.csv`,
-`queries.csv`, the context tables, and `msa_contexts.csv`. Set that directory
-as `PLM_DATA`. The Hugging Face benchmark download above is the default input
-for the LLM/Agent paths; use it for PLMs only when it contains this canonical
-`dataset.json` layout.
+Prepare the PLM input tables from the same Hugging Face download used above.
+This CPU-only step requires pandas and validates sequences, mutations and MSAs;
+it does not run a model or copy the benchmark, MSAs or PDBs. Candidate fitness
+labels are excluded from model inputs. Run it once for all six baselines:
+
+```bash
+export PLM_DATA="$PF_REPO/work/plm_inputs"
+python "$PF_REPO/code/plm/prepare_dataset.py" \
+  --benchmark-root "$PF_DATA" \
+  --output-dir "$PLM_DATA" \
+  --structure-manifest "$PF_DATA/Structures_alphafold3/manifest.csv"
+export PLM_STRUCTURES="$PLM_DATA/structures.csv"
+```
+
+The output directory must not already exist. It contains `dataset.json`,
+the canonical CSV tables and a validated local structure manifest. Pass
+`--structure-manifest "$PLM_STRUCTURES"` to the structure-aware preparation
+or inference scripts. Keep the relative locations of the downloaded data and
+generated input directory unchanged, or regenerate the inputs after moving them.
 
 For a sequence-only baseline, run all shards with the same `--num-shards` and
 distinct `--shard-id` values. The model directory, cache directory, and output
@@ -230,7 +243,6 @@ directory must contain the resources expected by that model.
 
 ```bash
 conda activate pfarena-esm2
-export PLM_DATA=/path/to/frozen_pfarena_model_dataset
 export PLM_WORK="$PF_REPO/work/plm"
 mkdir -p "$PLM_WORK"
 
