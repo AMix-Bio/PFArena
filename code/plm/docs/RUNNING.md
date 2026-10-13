@@ -66,14 +66,12 @@ python models/s3f/prepare_inputs.py \
 
 python models/s3f/prepare_candidate_surfaces.py \
   --input-dir "$WORK/s3f_inputs" --surface-dir "$WORK/s3f_surfaces" \
-  --s3f-script /path/to/S3F/score_s3f_fitness.py \
   --num-shards "$N" --shard-id "$I"
 
 python models/s3f/run_candidates.py \
   --dataset-dir "$DATASET" --input-dir "$WORK/s3f_inputs" \
   --surface-dir "$WORK/s3f_surfaces" --output-dir "$WORK/s3f" \
   --cache-dir "$WORK/cache/s3f" \
-  --s3f-script /path/to/S3F/score_s3f_fitness.py \
   --checkpoint /path/to/s3f.pth --esm-model-dir /path/to/S3F/esm2 \
   --num-shards "$N" --shard-id "$I"
 ```
@@ -101,7 +99,7 @@ python models/venusrem/run_candidates.py \
 ## S3F-MSA
 
 S3F-MSA requires a finalized S3F run and one EVE workflow per row of
-`mapping.csv`. For each context index `J`, compute sequence weights, train all
+`mapping.csv` (zero-based index `J`). For each context, compute sequence weights, train all
 five seeds, and then score the context:
 
 ```bash
@@ -131,8 +129,7 @@ checkpoints, logs, score direction, five-seed aggregation, and source hashes
 before reuse.
 
 `models/s3f_msa/eve_theta.csv` records the chain-specific weighting parameters
-from the reported training runs. It replaces the taxonomy field omitted from
-the public benchmark. For a different benchmark, supply an explicit
+from the reported training runs. For a different benchmark, supply an explicit
 `--theta-map` to `prepare_inputs.py`; missing chain parameters are not guessed.
 
 ## Finalization and evaluation

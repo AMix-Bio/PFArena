@@ -60,8 +60,8 @@ inference:
   `score` stages in `run_stage.py`, then `combine.py`.
 - VenusREM: run ProSST first, then use `prepare_inputs.py`.
 
-The complete platform-independent command sequence is provided in
-`docs/RUNNING.md`.
+Platform-independent commands are provided in `docs/RUNNING.md`; required
+model resources are listed in `docs/DEPENDENCIES.md`.
 
 After all inference shards finish, finalize one model run with:
 

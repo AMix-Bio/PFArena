@@ -33,6 +33,7 @@ from common_io import (
 from core import (
     AMINO_ACIDS,
     DEFAULT_ADAPTER_ROOT,
+    DEFAULT_S3F_SCRIPT,
     MODEL,
     MODEL_WINDOW,
     atomic_save_cache,
@@ -41,6 +42,7 @@ from core import (
     surface_artifacts,
     validate_context_metadata,
     validate_precomputed_surface,
+    validate_s3f_source,
 )
 from prepare_surfaces import validate_surface
 
@@ -56,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cache-dir", type=Path, required=True)
     parser.add_argument("--surface-dir", type=Path, required=True)
     parser.add_argument("--adapter-root", type=Path, default=DEFAULT_ADAPTER_ROOT)
-    parser.add_argument("--s3f-script", type=Path, required=True)
+    parser.add_argument("--s3f-script", type=Path, default=DEFAULT_S3F_SCRIPT)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--esm-model-dir", type=Path, required=True)
     parser.add_argument("--position-batch-size", type=int, default=2)
@@ -258,14 +260,12 @@ def main() -> None:
         raise ValueError("num-shards exceeds the number of S3F chain contexts")
 
     scorer_path = args.adapter_root / "pfarena_models/metrics/sequence/s3f.py"
-    s3f_code_files = sorted(args.s3f_script.parent.rglob("*.py"))
     esm_files = sorted(path for path in args.esm_model_dir.rglob("*") if path.is_file())
-    if not s3f_code_files or not esm_files:
-        raise FileNotFoundError("S3F code or ESM model files are missing")
+    if not esm_files:
+        raise FileNotFoundError("ESM model files are missing")
     model_files = {
         "checkpoint_sha256": sha256_file(args.checkpoint),
-        "s3f_script_sha256": sha256_file(args.s3f_script),
-        "s3f_code_sha256": sha256_files(s3f_code_files),
+        **validate_s3f_source(args.s3f_script),
         "esm_model_sha256": sha256_files(esm_files),
         "adapter_sha256": sha256_file(scorer_path),
     }

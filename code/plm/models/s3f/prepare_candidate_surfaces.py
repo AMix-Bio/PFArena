@@ -22,7 +22,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from common_io import atomic_write_json, sha256_file, sha256_files
 from prepare_surfaces import install_chunked_curvature, load_s3f_module, validate_surface
-from core import MODEL
+from core import DEFAULT_S3F_SCRIPT, validate_s3f_source
 
 
 CONTEXT_COLUMNS = [
@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--surface-dir", type=Path, required=True)
-    parser.add_argument("--s3f-script", type=Path, required=True)
+    parser.add_argument("--s3f-script", type=Path, default=DEFAULT_S3F_SCRIPT)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--shard-id", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
@@ -134,8 +134,7 @@ def main() -> None:
     if args.num_shards < 1 or not 0 <= args.shard_id < args.num_shards:
         raise ValueError("shard-id must satisfy 0 <= shard-id < num-shards")
     _, contexts = load_inputs(args.input_dir)
-    if sha256_file(args.s3f_script) != MODEL["s3f_script_sha256"]:
-        raise ValueError("deployed S3F script differs from model.json")
+    validate_s3f_source(args.s3f_script)
     selected_contexts = contexts
     if args.context_id:
         if args.context_id not in set(selected_contexts["context_id"]):

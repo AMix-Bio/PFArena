@@ -13,13 +13,26 @@ import numpy as np
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parents[1]
 
-from common_io import sha256_file
+from common_io import sha256_file, sha256_files
 
 
 MODEL = json.loads((SCRIPT_DIR / "model.json").read_text())
 AMINO_ACIDS = list(MODEL["amino_acids"])
 MODEL_WINDOW = 1022
 DEFAULT_ADAPTER_ROOT = PROJECT_ROOT / "model_adapters"
+DEFAULT_S3F_SCRIPT = DEFAULT_ADAPTER_ROOT / "s3f_runtime/score_s3f_fitness.py"
+
+
+def validate_s3f_source(script: Path) -> dict[str, str]:
+    hashes = {
+        "s3f_script_sha256": sha256_file(script),
+        "s3f_code_sha256": sha256_files(sorted(script.parent.rglob("*.py"))),
+        "s3f_config_sha256": sha256_file(script.parent / "config/evaluate/s3f.yaml"),
+    }
+    for field, observed in hashes.items():
+        if observed != MODEL[field]:
+            raise ValueError(f"deployed S3F {field} differs from model.json")
+    return hashes
 
 
 def effective_position_batch_size(sequence_length: int, requested: int) -> int:
