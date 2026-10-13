@@ -1,14 +1,19 @@
 # Running the protein-model baselines
 
-Run commands from the repository root. The examples below are independent of
+Run the commands below from `code/plm/`. The examples are independent of
 any scheduler. Use the model-specific environments and official resources
 listed in `DEPENDENCIES.md`.
 
-Set the following paths for the local installation:
+First activate a released PLM environment containing pandas and prepare inputs
+on CPU. `BENCHMARK` is the root downloaded from `AMix-Bio/PFArena`:
 
 ```bash
-DATASET=/path/to/frozen_pfarena_dataset
-STRUCTURES=/path/to/PFArena_PLM_Structures/manifest.csv
+BENCHMARK=/path/to/downloaded/PFArena
+DATASET=/path/to/new_plm_inputs
+python prepare_dataset.py \
+  --benchmark-root "$BENCHMARK" --output-dir "$DATASET" \
+  --structure-manifest "$BENCHMARK/Structures_alphafold3/manifest.csv"
+STRUCTURES="$DATASET/structures.csv"
 WORK=/path/to/new_work_directory
 N=1
 I=0
@@ -18,6 +23,16 @@ I=0
 `0,...,N-1`. Run every shard with the same `N` and a distinct `I`. Output and
 cache directories must be new or contain only validated artifacts from the
 identical configuration.
+
+Preparation excludes candidate fitness labels; only explicitly provided T3/T4
+context values are recorded separately and are not read by the protein models.
+MSA and PDB files remain in the download and are referenced by relative paths.
+Omit `--structure-manifest` for sequence-only use. To register structures later:
+
+```bash
+python prepare_structures.py --dataset-dir "$DATASET" \
+  --structure-manifest "$BENCHMARK/Structures_alphafold3/manifest.csv"
+```
 
 ## Direct sequence and structure models
 
@@ -51,14 +66,12 @@ python models/s3f/prepare_inputs.py \
 
 python models/s3f/prepare_candidate_surfaces.py \
   --input-dir "$WORK/s3f_inputs" --surface-dir "$WORK/s3f_surfaces" \
-  --s3f-script /path/to/S3F/score_s3f_fitness.py \
   --num-shards "$N" --shard-id "$I"
 
 python models/s3f/run_candidates.py \
   --dataset-dir "$DATASET" --input-dir "$WORK/s3f_inputs" \
   --surface-dir "$WORK/s3f_surfaces" --output-dir "$WORK/s3f" \
   --cache-dir "$WORK/cache/s3f" \
-  --s3f-script /path/to/S3F/score_s3f_fitness.py \
   --checkpoint /path/to/s3f.pth --esm-model-dir /path/to/S3F/esm2 \
   --num-shards "$N" --shard-id "$I"
 ```
@@ -86,7 +99,7 @@ python models/venusrem/run_candidates.py \
 ## S3F-MSA
 
 S3F-MSA requires a finalized S3F run and one EVE workflow per row of
-`mapping.csv`. For each context index `J`, compute sequence weights, train all
+`mapping.csv` (zero-based index `J`). For each context, compute sequence weights, train all
 five seeds, and then score the context:
 
 ```bash
@@ -114,6 +127,10 @@ python models/s3f_msa/combine.py \
 Run `train` once for each `SEED` in `0,...,4`. The stages validate weights,
 checkpoints, logs, score direction, five-seed aggregation, and source hashes
 before reuse.
+
+`models/s3f_msa/eve_theta.csv` records the chain-specific weighting parameters
+from the reported training runs. For a different benchmark, supply an explicit
+`--theta-map` to `prepare_inputs.py`; missing chain parameters are not guessed.
 
 ## Finalization and evaluation
 

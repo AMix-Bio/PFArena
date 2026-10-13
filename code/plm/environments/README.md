@@ -14,7 +14,7 @@ without changing the other environment.
 | S3F-MSA | `s3f_msa.yml` | 12.4 |
 | VenusREM | `venusrem.yml` | 12.1 |
 
-Create an environment from the repository root, for example:
+Run the following commands from `code/plm/`:
 
 ```bash
 conda env create -f environments/esm2.yml

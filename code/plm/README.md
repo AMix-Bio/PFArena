@@ -1,8 +1,7 @@
 # PFArena Protein-Model Baselines
 
 This module contains the preprocessing, inference, and result-finalization code
-for the six protein-model baselines evaluated on PFArena T1--T4. It also
-retains the complete reported predictions and metrics. Benchmark data and the
+for the six protein-model baselines evaluated on PFArena T1--T4. Benchmark data and the
 shared evaluator are maintained by the parent PFArena project and are supplied
 to this module through explicit paths.
 
@@ -24,6 +23,8 @@ log-odds within a chain. All baselines sum contributions across mutated chains.
 ## Contents
 
 - `models/`: model-specific preprocessing and inference implementations.
+- `prepare_dataset.py`: conversion of the published benchmark to canonical inputs.
+- `prepare_structures.py`: sequence- and checksum-validated local structure registration.
 - `model_adapters/`: the minimal scoring adapters used by the runners.
 - `common_io.py`, `dataset_io.py`, and `model_dataset_io.py`: shared validated I/O.
 - `finalize_results.py`: shard aggregation, coverage validation, and generation
@@ -32,8 +33,6 @@ log-odds within a chain. All baselines sum contributions across mutated chains.
   tables from the released final predictions.
 - `validate_results.py`: self-contained integrity check for released predictions,
   evaluation summaries, and the leaderboard.
-- `results/`: complete predictions and unified-evaluator outputs for all six
-  reported baselines.
 - `docs/`: input contract, external dependencies, and result organization.
 - `environments/`: one reproducible Conda specification per protein model and
   the runtime versions used for the reported experiments.
@@ -45,10 +44,10 @@ are released separately as the accompanying PFArena PLM Structures dataset.
 
 ## Running a baseline
 
-The parent project supplies a canonical dataset directory matching
-`docs/DATA_FORMAT.md`. Structure-aware models use the manifest distributed with
-the accompanying structure dataset, and MSA-aware models resolve the alignment
-paths recorded in `msa_contexts.csv`.
+Generate the canonical dataset from the Hugging Face benchmark using
+`prepare_dataset.py`, as shown in `docs/RUNNING.md`. Structure-aware models use
+the generated `structures.csv`; MSA-aware models resolve existing alignments
+through `msa_contexts.csv`. No additional canonical-data download is required.
 
 ESM-2, ProGen2-base, ProSST-2048, S3F, and VenusREM use model-specific
 `run_candidates.py` entry points with explicit data, output, cache, model
@@ -61,8 +60,8 @@ inference:
   `score` stages in `run_stage.py`, then `combine.py`.
 - VenusREM: run ProSST first, then use `prepare_inputs.py`.
 
-The complete platform-independent command sequence is provided in
-`docs/RUNNING.md`.
+Platform-independent commands are provided in `docs/RUNNING.md`; required
+model resources are listed in `docs/DEPENDENCIES.md`.
 
 After all inference shards finish, finalize one model run with:
 
@@ -79,7 +78,8 @@ evaluator distributed by the parent PFArena project. Required upstream
 repositories and checkpoints are listed in `docs/DEPENDENCIES.md`; no model
 parameters are included here.
 
-Validate all released protein-model results from the module root with:
+Historical result archives are not bundled in this checkout. If obtained
+separately and placed under `results/`, validate them from the module root with:
 
 ```bash
 python validate_results.py

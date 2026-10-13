@@ -1,11 +1,13 @@
 # Model adapters
 
-This directory contains only the scoring adapters and ProGen2 model-definition
-files required by the six released protein-model runners. Service components,
-runtime configuration, cached datasets, and model parameters are excluded.
+This directory contains the scoring adapters, ProGen2 model definitions, and
+S3F inference source required by the protein-model runners. Model weights,
+datasets, and service components are excluded.
 
-Machine-specific defaults in the ProSST and S3F adapters are replaced by
-`PROSST_*` and `S3F_*` environment variables. Their scoring logic is unchanged.
+The runners accept explicit model-resource paths; adapters also support
+`PROSST_*` and `S3F_*` environment variables.
 
-Upstream repositories and model parameters remain external dependencies and
-must be obtained from their official sources.
+`s3f_runtime/` includes the evaluated S3F bridge, supporting modules, and task
+configuration. Internal default paths and unused configuration sections were
+removed without changing scoring or model parameters. Training scripts are not
+included. Required external resources are listed in `../docs/DEPENDENCIES.md`.
