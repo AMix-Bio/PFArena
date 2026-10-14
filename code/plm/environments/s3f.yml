@@ -8,7 +8,11 @@ dependencies:
   - python=3.10.20
   - pytorch=2.1.2
   - pytorch-cuda=12.1
+  - torchvision=0.16.2
   - pyg=2.4.0
+  - pytorch-scatter=2.1.2=*cu121
+  - pytorch-cluster=1.6.3=*cu121
+  - setuptools=80.9.0
   - pip
   - pip:
       - biopython==1.83
