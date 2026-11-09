@@ -318,8 +318,6 @@ def _load_prediction_dir(
         raise FileNotFoundError(f"Prediction directory does not exist: {predictions_dir}")
     per_assay: dict[str, list[PredictionRow]] = defaultdict(list)
     csv_paths = sorted(predictions_dir.rglob("*.csv"))
-    if not csv_paths:
-        raise ValueError(f"No prediction CSV files found in {predictions_dir}")
     for path in csv_paths:
         is_nested = path.parent != predictions_dir
         default_assay = _derive_nested_default_assay(path, setting) if is_nested else path.stem
@@ -413,8 +411,6 @@ def _load_prediction_file(
                 )
             )
 
-    if not per_assay:
-        raise ValueError(f"No predictions found in {predictions_file}")
     return _sort_predictions(per_assay)
 
 
@@ -431,12 +427,14 @@ def evaluate_full_setting(
     ground_truth_dir: Path | None = None,
     predictions_path: Path,
     top_k: int = TOP_K,
-    strict: bool = True,
+    lenient: int = 1,
     assay_column: str | None = None,
     mutant_column: str | None = None,
     rank_column: str = "rank",
     score_column: str = "score",
 ) -> FullEvaluationResult:
+    if lenient not in (0, 1, 2):
+        raise ValueError("lenient must be 0, 1, or 2")
     setting = normalize_setting(setting)
     top_k = (
         setting_top_k(setting)
@@ -462,18 +460,21 @@ def evaluate_full_setting(
         score_column=score_column,
         setting=setting,
     )
-    _validate_predictions(truth, predictions, top_k=top_k, strict=strict, setting=setting)
-
-    per_assay = [
-        evaluate_one_assay(
-            truth=assay_truth,
-            pred_rows=predictions.get(assay)
-            or missing_query_random_predictions(assay_truth, enabled=not strict),
-            top_k=top_k,
-            setting=setting,
-        )
-        for assay, assay_truth in sorted(truth.items())
-    ]
+    unavailable = set(_validate_predictions(truth, predictions, top_k=top_k, lenient=lenient, setting=setting))
+    per_assay = []
+    for assay, assay_truth in sorted(truth.items()):
+        if assay in unavailable and lenient == 2:
+            continue
+        if assay in unavailable:
+            pred_rows = missing_query_random_predictions(assay_truth, enabled=True)
+            if not setting_requires_full_ranking(setting):
+                pred_rows = pred_rows[:top_k]
+        else:
+            pred_rows = predictions[assay]
+        row = evaluate_one_assay(truth=assay_truth, pred_rows=pred_rows, top_k=top_k, setting=setting)
+        row["prediction_status"] = "random_replacement" if assay in unavailable else "provided"
+        row["num_provided_predictions"] = len(predictions.get(assay, []))
+        per_assay.append(row)
     summary = summarize_full_results(
         per_assay,
         truth=truth,
@@ -482,8 +483,12 @@ def evaluate_full_setting(
         ground_truth_dir=ground_truth_dir,
         predictions_path=predictions_path,
         top_k=top_k,
-        strict=strict,
+        lenient=lenient,
     )
+    replaced = sorted(unavailable) if lenient == 1 else []
+    skipped = sorted(unavailable) if lenient == 2 else []
+    summary["quality"].update(random_replacement_cases=len(replaced), skipped_cases=len(skipped))
+    summary["problem_assays"].update(random_replacement_cases=replaced, skipped_cases=skipped)
     return FullEvaluationResult(per_assay=per_assay, summary=summary)
 
 
@@ -492,9 +497,9 @@ def _validate_predictions(
     predictions: dict[str, list[PredictionRow]],
     *,
     top_k: int,
-    strict: bool,
+    lenient: int,
     setting: str,
-) -> None:
+) -> list[str]:
     truth_assays = set(truth)
     prediction_assays = set(predictions)
     unknown = sorted(prediction_assays - truth_assays)
@@ -504,12 +509,24 @@ def _validate_predictions(
         for assay, rows in predictions.items()
         if assay in truth_assays and len(rows) < required_prediction_count(truth[assay], top_k)
     )
-    if strict and (unknown or missing or short):
+    incomplete = []
+    for assay in sorted(truth_assays & prediction_assays):
+        mutants = [row.mutant for row in predictions[assay]]
+        if len(mutants) != len(set(mutants)):
+            raise ValueError(f"Duplicate predictions for {assay}")
+        if setting_requires_full_ranking(setting):
+            if set(mutants) - set(truth[assay].by_mutant):
+                raise ValueError(f"Predictions outside the current candidate pool: {assay}")
+            if len(mutants) != len(truth[assay].rows):
+                incomplete.append(assay)
+    if lenient == 0 and (unknown or missing or short or incomplete):
         messages = []
         if unknown:
             messages.append(f"unknown assay ids: {unknown[:10]}{'...' if len(unknown) > 10 else ''}")
         if missing:
             messages.append(f"missing assays: {missing[:10]}{'...' if len(missing) > 10 else ''}")
+        if incomplete:
+            messages.append(f"incomplete candidate rankings: {incomplete[:10]}{'...' if len(incomplete) > 10 else ''}")
         if short:
             preview = [
                 (assay, len(predictions[assay]), required_prediction_count(truth[assay], top_k))
@@ -520,6 +537,7 @@ def _validate_predictions(
                 f"{preview}{'...' if len(short) > 10 else ''}"
             )
         raise ValueError("; ".join(messages))
+    return sorted(set(missing) | set(short) | set(incomplete))
 
 
 def legal_prediction_mutants(rows: list[PredictionRow], truth: AssayTruth) -> set[str]:
@@ -543,7 +561,7 @@ def missing_query_random_predictions(truth: AssayTruth, *, enabled: bool) -> lis
             mutant=mutant,
             order_value=float(index),
             input_index=index - 1,
-            source="synthetic_missing_query_random",
+            source="synthetic_random_replacement",
         )
         for index, mutant in enumerate(ordered_items, start=1)
     ]
@@ -754,12 +772,11 @@ def summarize_full_results(
     ground_truth_dir: Path,
     predictions_path: Path,
     top_k: int,
-    strict: bool,
+    lenient: int,
 ) -> dict[str, Any]:
-    if not per_assay:
-        raise ValueError("No per-assay results to summarize")
-
-    def mean(metric: str) -> float:
+    def mean(metric: str) -> float | None:
+        if not per_assay:
+            return None
         return float(sum(float(row[metric]) for row in per_assay) / len(per_assay))
 
     missing_assays = sorted(set(truth) - set(predictions))
@@ -779,14 +796,16 @@ def summarize_full_results(
     metrics = setting_metrics(setting)
     num_queries = len(per_assay)
     num_assays = (
-        len({assay.source_path.parent.name for assay in truth.values()})
+        len({truth[row["assay"]].source_path.parent.name for row in per_assay})
         if setting_uses_nested_groups(setting)
         else num_queries
     )
 
     return {
         "setting": setting,
-        "strict": strict,
+        "strict": lenient == 0,
+        "lenient": lenient,
+        "num_target_cases": len(truth),
         "num_assays": num_assays,
         "num_queries": num_queries,
         "ground_truth_dir": str(ground_truth_dir),
@@ -838,9 +857,7 @@ def write_outputs(result: FullEvaluationResult, output_dir: Path) -> None:
 
 
 def write_per_assay_csv(path: Path, rows: list[dict[str, Any]]) -> None:
-    if not rows:
-        raise ValueError("Cannot write empty per-assay metrics")
-    fieldnames = list(rows[0].keys())
+    fieldnames = list(rows[0].keys()) if rows else ["assay"]
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
@@ -862,6 +879,10 @@ def write_summary_csv(path: Path, summary: dict[str, Any]) -> None:
         "setting": summary["setting"],
         "num_assays": summary["num_assays"],
         "num_queries": summary["num_queries"],
+        "num_target_cases": summary["num_target_cases"],
+        "lenient": summary["lenient"],
+        "random_replacement_cases": quality["random_replacement_cases"],
+        "skipped_cases": quality["skipped_cases"],
         **metrics,
         "missing_assays": quality["missing_assays"],
         "unknown_assays": quality["unknown_assays"],

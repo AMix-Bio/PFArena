@@ -14,7 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--predictions", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--ground-truth-dir", default=None, type=Path)
-    parser.add_argument("--lenient", action="store_true", help="Score available assays instead of failing on coverage issues.")
+    parser.add_argument("--lenient", type=int, choices=(0, 1, 2), nargs="?", const=1, default=1, help="Missing/incomplete cases: 0=fail, 1=random replacement (default), 2=skip and report.")
     parser.add_argument("--assay-column", default=None)
     parser.add_argument("--mutant-column", default=None)
     parser.add_argument("--rank-column", default="rank")
@@ -28,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
         setting=args.setting,
         ground_truth_dir=args.ground_truth_dir,
         predictions_path=args.predictions,
-        strict=not args.lenient,
+        lenient=args.lenient,
         assay_column=args.assay_column,
         mutant_column=args.mutant_column,
         rank_column=args.rank_column,
@@ -37,15 +37,19 @@ def main(argv: list[str] | None = None) -> int:
     write_outputs(result, args.output_dir)
 
     metrics = result.summary["metrics"]
-    metric_text = " ".join(f"{name}={value:.6f}" for name, value in metrics.items())
+    metric_text = " ".join(f"{name}={value:.6f}" if value is not None else f"{name}=NA" for name, value in metrics.items())
+    print(f"========== {args.setting} ==========")
+    print(f"==> {metric_text}")
     print(
-        f"-- {args.setting} "
+        f"[Completeness] "
         f"num_assays={result.summary['num_assays']} "
         f"num_queries={result.summary['num_queries']} "
-        f"missing_assays={result.summary['quality']['missing_assays']}"
+        f"missing_assays={result.summary['quality']['missing_assays']} "
+        f"incomplete_rankings={result.summary['quality']['assays_with_incomplete_candidate_ranking']} "
+        f"random_replacements={result.summary['quality']['random_replacement_cases']} "
+        f"skipped_cases={result.summary['quality']['skipped_cases']}"
     )
-    print(f"   {metric_text}")
-    print(f"wrote {args.output_dir}")
+    print(f"[Output] wrote {args.output_dir}\n")
     return 0
 
 
