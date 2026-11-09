@@ -925,6 +925,45 @@ def format_single_context(context: tuple[tuple[str, str], ...]) -> str:
     )
 
 
+def task_specific_guidance(query: NativeQuery) -> str:
+    if query.task == TASK_BY_ID["1"]:
+        return (
+            "This is T1/single-mutant generation. No candidate list is provided. "
+            "Generate exactly 40 valid single amino-acid substitutions in WTposMUT format, "
+            "ranked from best expected assay fitness to worst among the 40."
+        )
+    if query.task == TASK_BY_ID["2"]:
+        return (
+            "This is T2/measurement-free multi-mutant ranking. Every candidate is a multi-mutant string "
+            "sampled from the source assay. Treat each candidate as one opaque closed-set item, "
+            "copy every supplied candidate exactly once, and rank all candidates from best to "
+            "worst for the assay readout."
+        )
+    if query.task == TASK_BY_ID["3"]:
+        return (
+            "This is T3/anchor-informed multi-mutant ranking. The anchor mutant and its ground-truth "
+            "DMS score are intentionally visible. Each candidate is a multi-mutation string "
+            "that includes the anchor mutant and one or more successor changes. Rank all "
+            "candidate multi-mutations from best to worst for the assay readout, accounting "
+            "for their combined effects and copying each supplied candidate exactly."
+        )
+    if query.task == TASK_BY_ID["4"]:
+        return (
+            "This is T4/single-mutant-informed multi-mutant ranking. Each candidate is a multi-mutation combo "
+            "string. The ground-truth single-mutant DMS scores of every component appearing in "
+            "any combo candidate are intentionally visible. The combo candidate fitness values "
+            "are hidden and must not be read from local files. Rank all combo candidates from "
+            "best to worst for the assay readout using the supplied single-mutant context and "
+            "any public/derived evidence you obtain. Do not use the raw sum of component "
+            "single-mutant DMS scores as the final ranking criterion, because candidates can "
+            "contain different numbers of mutations and raw sums are length-confounded. Treat "
+            "single-mutant scores as evidence, then account for candidate length, average or "
+            "per-mutation effect, the weakest component, possible negative epistasis, structural "
+            "clashes, and protein-language-model or structural evidence when available."
+        )
+    raise ValueError(f"Unsupported task guidance for {query.task}")
+
+
 def build_agent_prompt(query: NativeQuery, max_tool_rounds: int, require_tool_use: bool = True) -> str:
     record = query.record
     prompt_artifact_dir = os.environ.get("BIOMNI_AGENT_ARTIFACT_DIR", str(DEFAULT_AGENT_ARTIFACT_DIR))

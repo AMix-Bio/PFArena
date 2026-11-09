@@ -724,9 +724,10 @@ def _load_real_deps():
     try:
         import torch
         from torch.nn import functional as F
-        # TorchDrug patches torch.utils.data.Dataset at import time. Importing
-        # this first avoids a torchvision metaclass conflict later via ESM.
+        # TorchDrug patches torch.utils.data.Dataset at import time. Import
+        # torchvision and PyG first to avoid their Dataset metaclass conflicts.
         from torchvision.datasets.utils import download_url as _download_url  # noqa: F401
+        import torch_geometric.nn  # noqa: F401
         from torchdrug import core, data, utils
 
         import util

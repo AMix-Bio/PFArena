@@ -2,7 +2,6 @@
 # Python >=3.11 (required by biomni)
 
 ## LLM inference
-openai==2.24.0
 tqdm==4.67.1
 
 ## Agent execution
