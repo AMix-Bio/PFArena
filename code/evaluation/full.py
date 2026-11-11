@@ -512,10 +512,10 @@ def _validate_predictions(
     incomplete = []
     for assay in sorted(truth_assays & prediction_assays):
         mutants = [row.mutant for row in predictions[assay]]
-        if len(mutants) != len(set(mutants)):
+        if lenient == 0 and len(mutants) != len(set(mutants)):
             raise ValueError(f"Duplicate predictions for {assay}")
         if setting_requires_full_ranking(setting):
-            if set(mutants) - set(truth[assay].by_mutant):
+            if lenient == 0 and set(mutants) - set(truth[assay].by_mutant):
                 raise ValueError(f"Predictions outside the current candidate pool: {assay}")
             if len(mutants) != len(truth[assay].rows):
                 incomplete.append(assay)
