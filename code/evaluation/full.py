@@ -461,6 +461,10 @@ def evaluate_full_setting(
         setting=setting,
     )
     unavailable = set(_validate_predictions(truth, predictions, top_k=top_k, lenient=lenient, setting=setting))
+    if lenient == 1 and setting_requires_full_ranking(setting):
+        # Score supplied rankings, even when incomplete or containing invalid entries.
+        # Replace the whole ranking only when no prediction rows were supplied.
+        unavailable = {assay for assay in truth if not predictions.get(assay)}
     per_assay = []
     for assay, assay_truth in sorted(truth.items()):
         if assay in unavailable and lenient == 2:

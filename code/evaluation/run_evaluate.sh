@@ -11,11 +11,13 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 MODEL="${MODEL:-gpt-6-astra}"                           # For LLM or PLM source
 SETTING="${SETTING:-}"                                  # Empty: available tasks, then average if all four succeed; Single task: set to one of ("T1_single_mutant_generation", "T2_measurement_free_multi_mutant_ranking", "T3_anchor_informed_multi_mutant_ranking", "T4_single_mutant_informed_multi_mutant_ranking")
 RESULTS_SOURCE="${RESULTS_SOURCE:-llm}"                 # Source: ("llm", "plm", "agent")
+# 0: strict validation; 1: score provided T2-T4 rankings, randomize only missing cases.
+# T1 mode 1 also replaces below-budget cases; mode 2 keeps its existing skip rules.
+LENIENT="${LENIENT:-1}"
 # ==============================
 
 RESULTS_ROOT="${RESULTS_ROOT:-${CODE_DIR}/${RESULTS_SOURCE}/results}"
 GROUND_TRUTH_DIR="${GROUND_TRUTH_DIR:-}"
-LENIENT="${LENIENT:-1}"                                  # 0: fail; 1: random replacement; 2: skip and report
 
 case "${RESULTS_SOURCE}" in
     llm|plm|agent)

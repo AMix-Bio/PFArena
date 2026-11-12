@@ -1,6 +1,9 @@
 # Large datasets and model assets.
 /PFArena/
 /plm_data/
+/code/llm/results/
+/code/plm/results/
+/code/agent/results/
 
 # Generated Python bytecode and caches.
 __pycache__/

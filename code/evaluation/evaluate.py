@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from evaluation.full import evaluate_full_setting, SUPPORTED_SETTINGS, write_outputs
+from evaluation.full import evaluate_full_setting, SUPPORTED_SETTINGS, setting_requires_full_ranking, write_outputs
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -14,7 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--predictions", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--ground-truth-dir", default=None, type=Path)
-    parser.add_argument("--lenient", type=int, choices=(0, 1, 2), nargs="?", const=1, default=1, help="Missing/incomplete cases: 0=fail, 1=random replacement (default), 2=skip and report.")
+    parser.add_argument("--lenient", type=int, choices=(0, 1, 2), nargs="?", const=1, default=1, help="0=fail on invalid/missing cases; 1=score provided rankings and randomly replace missing cases (default; T1 also replaces below-budget cases); 2=skip and report missing/incomplete cases.")
     parser.add_argument("--assay-column", default=None)
     parser.add_argument("--mutant-column", default=None)
     parser.add_argument("--rank-column", default="rank")
@@ -40,12 +40,17 @@ def main(argv: list[str] | None = None) -> int:
     metric_text = " ".join(f"{name}={value:.6f}" if value is not None else f"{name}=NA" for name, value in metrics.items())
     print(f"========== {args.setting} ==========")
     print(f"==> {metric_text}")
+    incomplete_candidates_text = (
+        f"incomplete_candidates={result.summary['quality']['assays_with_incomplete_candidate_ranking']} "
+        if setting_requires_full_ranking(args.setting)
+        else ""
+    )
     print(
         f"[Completeness] "
-        f"num_assays={result.summary['num_assays']} "
-        f"num_queries={result.summary['num_queries']} "
+        f"total_assays={result.summary['num_target_cases']} "
+        f"evaluated_assays={result.summary['num_assays']} "
         f"missing_assays={result.summary['quality']['missing_assays']} "
-        f"incomplete_rankings={result.summary['quality']['assays_with_incomplete_candidate_ranking']} "
+        f"{incomplete_candidates_text}"
         f"random_replacements={result.summary['quality']['random_replacement_cases']} "
         f"skipped_cases={result.summary['quality']['skipped_cases']}"
     )
