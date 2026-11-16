@@ -2,7 +2,7 @@
 
 ![PFArena overview](PFArena_fig.png)
 
-**PFArena** is an assay-grounded **protein-mutation benchmark** that systematically evaluates protein language models (PLMs), large language models (LLMs), and LLM-based agents under four protein modification settings. Comprising 202 unique assays, 293 assay--task instances, and 607,269 target candidate rows, PFArena defines four task interfaces that correspond to common decisions in protein-engineering workflows.
+**PFArena** is an assay-grounded **protein-mutation benchmark** that systematically evaluates protein language models (PLMs), large language models (LLMs), and LLM-based agents under four protein modification settings. Comprising 170 unique assays, 248 assay–task instances, and 466,069 target candidate rows, PFArena defines four task interfaces that correspond to common decisions in protein-engineering workflows.
 
 Runnable inference and evaluation code is under [`code/`](code/). Below is a detailed setup tutorial. 
 
@@ -84,12 +84,12 @@ PFArena/
 If the downloaded files are placed elsewhere, set `PF_DATA` to that directory
 before inference. The four task directories are:
 
-| Task | Directory | Task purpose |
-| --- | --- | --- |
-| T1 | `T1_single_mutant_generation` | Propose promising mutations without target-specific mutation measurements |
-| T2 | `T2_measurement_free_multi_mutant_ranking` | Prioritize a supplied pool of multi-mutant candidates |
-| T3 | `T3_anchor_informed_multi_mutant_ranking` | Rank successors of an experimentally measured mutant |
-| T4 | `T4_single_mutant_informed_multi_mutant_ranking` | Prioritize combinations using measured effects of their component mutations |
+| Task | Directory | Instances | Task purpose |
+| --- | --- | ---: | --- |
+| T1 | `T1_single_mutant_generation` | 101 | Propose promising mutations without target-specific mutation measurements |
+| T2 | `T2_measurement_free_multi_mutant_ranking` | 65 | Prioritize a supplied pool of multi-mutant candidates |
+| T3 | `T3_anchor_informed_multi_mutant_ranking` | 60 | Rank successors of an experimentally measured mutant |
+| T4 | `T4_single_mutant_informed_multi_mutant_ranking` | 22 | Prioritize combinations using measured effects of their component mutations |
 
 The `norm_data` tables contain the candidate mutations; `DMS_score` is the
 ground-truth label used by evaluation. Keep the downloaded benchmark data
